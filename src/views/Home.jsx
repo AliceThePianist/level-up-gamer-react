@@ -20,7 +20,7 @@ const categorias = [
   ['Servicio Técnico', 'Soporte para cuidar tus equipos.'],
 ]
 
-function Home() {
+function Home({ agregarProducto }) {
   return (
     <main id="contenido" tabIndex={-1}>
       <section className="banner-principal" aria-labelledby="titulo-inicio">
@@ -73,11 +73,11 @@ function Home() {
         <Container>
           <p className="etiqueta">LO MÁS BUSCADO</p>
           <h2 id="titulo-destacados">Productos destacados</h2>
-          <p className="text-secondary mb-4">Una selección para conocer Level-Up Gamer. Compras próximamente.</p>
+          <p className="text-secondary mb-4">Una selección para conocer Level-Up Gamer. Agrega tus favoritos y simula tu compra.</p>
           <Row className="g-4">
             {productosIniciales.slice(0, 4).map((producto) => (
               <Col key={producto.id} sm={6} lg={3}>
-                <ProductCard producto={producto} mostrarDescripcion={false} tituloAs="h3" />
+                <ProductCard producto={producto} agregarProducto={agregarProducto} mostrarDescripcion={false} tituloAs="h3" />
               </Col>
             ))}
           </Row>
