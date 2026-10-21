@@ -46,7 +46,7 @@ function Registro() {
       }
       setMensaje(resultado.usuario.descuento === 20
         ? 'Registro de demostración exitoso. Beneficio Duoc del 20% registrado; todavía no se aplica al carrito.'
-        : 'Registro de demostración exitoso. Tu perfil se guardó sin contraseñas.')
+        : 'Registro de demostración exitoso. Tu perfil y contraseña ficticia se guardaron para las pruebas.')
       setFormulario(formularioInicial)
     } catch {
       setErrorGuardado('No se pudo guardar el registro. El almacenamiento puede estar bloqueado o contener datos inválidos. No se modificaron los registros anteriores.')
@@ -63,7 +63,7 @@ function Registro() {
                 <p className="etiqueta">COMUNIDAD LEVEL-UP GAMER</p>
                 <h1>Registro de usuarios</h1>
                 <p>Completa todos los campos. Debes tener al menos 18 años.</p>
-                <Alert variant="info">Simulación académica: utiliza datos ficticios y una contraseña de prueba. Este formulario no crea una cuenta segura ni permite iniciar sesión.</Alert>
+                <Alert variant="info">Simulación académica: utiliza datos ficticios y una contraseña de prueba. La contraseña ficticia se guarda en texto plano en este navegador. No uses datos reales: esto no es autenticación segura.</Alert>
                 {mensaje && <Alert variant="success" role="status">{mensaje}</Alert>}
                 {errorGuardado && <Alert variant="danger">{errorGuardado}</Alert>}
                 {Object.values(errores).some(Boolean) && <Alert variant="danger">Revisa los campos indicados antes de continuar.</Alert>}
@@ -89,7 +89,7 @@ function Registro() {
                       </Col>
                     ))}
                     <Col xs={12}>
-                      <p className="text-secondary small">Con @duoc.cl o @duocuc.cl se registra un beneficio simulado del 20%, aún sin aplicación al carrito. El perfil se guarda en este navegador; las contraseñas no se guardan.</p>
+                      <p className="text-secondary small">Con @duoc.cl o @duocuc.cl se registra un beneficio simulado del 20%, aún sin aplicación al carrito. El perfil y la contraseña ficticia se guardan en este navegador; la confirmación no se guarda.</p>
                       <Button type="submit" variant="success" className="w-100">Registrarme</Button>
                     </Col>
                   </Row>
