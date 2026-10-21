@@ -19,7 +19,7 @@ const categorias = [
   ['Servicio Técnico', 'Soporte para cuidar tus equipos.'],
 ]
 
-function Home({ productos, agregarProducto }) {
+function Home({ productos, carrito, agregarProducto }) {
   return (
     <main id="contenido" tabIndex={-1}>
       <section className="banner-principal" aria-labelledby="titulo-inicio">
@@ -76,7 +76,7 @@ function Home({ productos, agregarProducto }) {
           <Row className="g-4">
             {productos.slice(0, 4).map((producto) => (
               <Col key={producto.id} sm={6} lg={3}>
-                <ProductCard producto={producto} agregarProducto={agregarProducto} mostrarDescripcion={false} tituloAs="h3" />
+                <ProductCard cantidad={carrito.find((item) => item.id === producto.id)?.cantidad || 0} producto={producto} agregarProducto={agregarProducto} mostrarDescripcion={false} tituloAs="h3" />
               </Col>
             ))}
           </Row>

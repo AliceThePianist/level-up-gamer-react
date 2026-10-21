@@ -1,7 +1,7 @@
 import { Col, Container, Row } from 'react-bootstrap'
 import ProductCard from '../components/ProductCard'
 
-function Productos({ productos, agregarProducto }) {
+function Productos({ productos, carrito, agregarProducto }) {
   return (
     <main id="contenido" tabIndex={-1} className="seccion fondo-suave">
       <Container>
@@ -12,7 +12,7 @@ function Productos({ productos, agregarProducto }) {
         <Row className="g-4">
           {productos.map((producto) => (
             <Col key={producto.id} xs={12} md={6} lg={4}>
-              <ProductCard producto={producto} agregarProducto={agregarProducto} />
+              <ProductCard cantidad={carrito.find((item) => item.id === producto.id)?.cantidad || 0} producto={producto} agregarProducto={agregarProducto} />
             </Col>
           ))}
         </Row>

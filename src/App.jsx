@@ -14,6 +14,7 @@ import AdminLayout from './views/admin/AdminLayout'
 import AdminProductos from './views/admin/AdminProductos'
 import AdminAgregarProducto from './views/admin/AdminAgregarProducto'
 import AdminEditarProducto from './views/admin/AdminEditarProducto'
+import DetalleProducto from './views/DetalleProducto'
 
 function App() {
   const [catalogo, setCatalogo] = useState(cargarProductos)
@@ -33,6 +34,7 @@ function App() {
 
   // Solo guardamos identificador y cantidad; los datos del producto tienen una única fuente.
   const [carrito, setCarrito] = useState([])
+  const [avisoCarrito, setAvisoCarrito] = useState('')
   const [totalCompra, setTotalCompra] = useState(null)
   const { pathname, hash } = useLocation()
   const unidades = carrito.reduce((suma, item) => suma + item.cantidad, 0)
@@ -51,8 +53,10 @@ function App() {
   }, [pathname, hash])
 
   function agregarProducto(id) {
-    if (!productos.some((producto) => producto.id === id)) return
+    const producto = productos.find((producto) => producto.id === id)
+    if (!producto || producto.stock === 0) return
     setCarrito((actual) => {
+      if ((actual.find((item) => item.id === id)?.cantidad || 0) >= producto.stock) return actual
       const existe = actual.some((item) => item.id === id)
       return existe
         ? actual.map((item) => item.id === id ? { ...item, cantidad: item.cantidad + 1 } : item)
@@ -92,6 +96,10 @@ function App() {
     const nuevos = productos.map((producto) => producto.id === id ? { ...datos, id } : producto)
     guardarProductos(nuevos)
     setCatalogo({ productos: nuevos, error: '' })
+    if (carrito.some((item) => item.id === id && item.cantidad > datos.stock)) {
+      setCarrito((actual) => actual.map((item) => item.id === id ? { ...item, cantidad: Math.min(item.cantidad, datos.stock) } : item).filter((item) => item.cantidad > 0))
+      setAvisoCarrito('Se ajustaron las cantidades del carrito al stock disponible.')
+    }
   }
 
   return (
@@ -100,11 +108,13 @@ function App() {
       <Navbar unidades={unidades} usuarioSesion={usuarioSesion} cerrarSesion={cerrarSesion} />
       {errorSesion && <Container className="mt-3"><Alert variant="danger">{errorSesion}</Alert></Container>}
       {catalogo.error && <Container className="mt-3"><Alert variant="danger">{catalogo.error}</Alert></Container>}
+      {avisoCarrito && <Container className="mt-3"><Alert variant="info" dismissible onClose={() => setAvisoCarrito('')}>{avisoCarrito}</Alert></Container>}
       <Routes>
         <Route path="/login" element={<Login alIniciarSesion={setUsuarioSesion} />} />
         <Route path="/registro" element={<Registro />} />
-        <Route path="/" element={<Home productos={productos} agregarProducto={agregarProducto} />} />
-        <Route path="/productos" element={<Productos productos={productos} agregarProducto={agregarProducto} />} />
+        <Route path="/" element={<Home productos={productos} carrito={carrito} agregarProducto={agregarProducto} />} />
+        <Route path="/productos" element={<Productos productos={productos} carrito={carrito} agregarProducto={agregarProducto} />} />
+        <Route path="/producto/:id?" element={<DetalleProducto productos={productos} carrito={carrito} agregarProducto={agregarProducto} />} />
         <Route path="/carrito" element={<Carrito productos={productos} carrito={carrito} total={total} totalCompra={totalCompra} eliminarProducto={eliminarProducto} comprar={comprar} />} />
         <Route path="/admin" element={<AdminLayout usuario={usuarioSesion} />}>
           <Route index element={<Navigate to="productos" replace />} />
