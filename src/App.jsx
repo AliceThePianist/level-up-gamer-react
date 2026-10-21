@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, Container } from 'react-bootstrap'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './views/Home'
@@ -9,9 +9,14 @@ import Carrito from './views/Carrito'
 import Registro from './views/Registro'
 import Login from './views/Login'
 import { leerSesion, eliminarSesion } from './data/sesion'
-import { productosIniciales } from './data/productosIniciales'
+import { cargarProductos, guardarProductos } from './data/productos'
+import AdminLayout from './views/admin/AdminLayout'
+import AdminProductos from './views/admin/AdminProductos'
+import AdminAgregarProducto from './views/admin/AdminAgregarProducto'
 
 function App() {
+  const [catalogo, setCatalogo] = useState(cargarProductos)
+  const productos = catalogo.productos
   const [usuarioSesion, setUsuarioSesion] = useState(leerSesion)
   const [errorSesion, setErrorSesion] = useState('')
 
@@ -31,8 +36,8 @@ function App() {
   const { pathname, hash } = useLocation()
   const unidades = carrito.reduce((suma, item) => suma + item.cantidad, 0)
   const total = carrito.reduce((suma, item) => {
-    const producto = productosIniciales.find((producto) => producto.id === item.id)
-    return suma + producto.precio * item.cantidad
+    const producto = productos.find((producto) => producto.id === item.id)
+    return suma + (producto ? producto.precio * item.cantidad : 0)
   }, 0)
 
   // Navegar sin recargar conserva el carrito y permite volver a las secciones de Inicio.
@@ -45,6 +50,7 @@ function App() {
   }, [pathname, hash])
 
   function agregarProducto(id) {
+    if (!productos.some((producto) => producto.id === id)) return
     setCarrito((actual) => {
       const existe = actual.some((item) => item.id === id)
       return existe
@@ -63,17 +69,40 @@ function App() {
     setCarrito([])
   }
 
+  function agregarProductoCatalogo(datos) {
+    if (usuarioSesion?.rol !== 'admin' || catalogo.error) throw new Error('Acción no disponible')
+    // Supera los IDs actuales y los reservados de los cuatro productos iniciales.
+    const id = Math.max(Date.now(), ...productos.map((producto) => producto.id + 1), 5)
+    const nuevos = [...productos, { ...datos, id }]
+    guardarProductos(nuevos)
+    setCatalogo({ productos: nuevos, error: '' })
+  }
+
+  function eliminarProductoCatalogo(id) {
+    if (usuarioSesion?.rol !== 'admin' || catalogo.error) throw new Error('Acción no disponible')
+    const nuevos = productos.filter((producto) => producto.id !== id)
+    guardarProductos(nuevos)
+    setCatalogo({ productos: nuevos, error: '' })
+    setCarrito((actual) => actual.filter((item) => item.id !== id))
+  }
+
   return (
     <>
       <a className="saltar-contenido" href="#contenido">Saltar al contenido</a>
       <Navbar unidades={unidades} usuarioSesion={usuarioSesion} cerrarSesion={cerrarSesion} />
       {errorSesion && <Container className="mt-3"><Alert variant="danger">{errorSesion}</Alert></Container>}
+      {catalogo.error && <Container className="mt-3"><Alert variant="danger">{catalogo.error}</Alert></Container>}
       <Routes>
         <Route path="/login" element={<Login alIniciarSesion={setUsuarioSesion} />} />
         <Route path="/registro" element={<Registro />} />
-        <Route path="/" element={<Home agregarProducto={agregarProducto} />} />
-        <Route path="/productos" element={<Productos agregarProducto={agregarProducto} />} />
-        <Route path="/carrito" element={<Carrito carrito={carrito} total={total} totalCompra={totalCompra} eliminarProducto={eliminarProducto} comprar={comprar} />} />
+        <Route path="/" element={<Home productos={productos} agregarProducto={agregarProducto} />} />
+        <Route path="/productos" element={<Productos productos={productos} agregarProducto={agregarProducto} />} />
+        <Route path="/carrito" element={<Carrito productos={productos} carrito={carrito} total={total} totalCompra={totalCompra} eliminarProducto={eliminarProducto} comprar={comprar} />} />
+        <Route path="/admin" element={<AdminLayout usuario={usuarioSesion} />}>
+          <Route index element={<Navigate to="productos" replace />} />
+          <Route path="productos" element={<AdminProductos productos={productos} eliminarProducto={eliminarProductoCatalogo} />} />
+          <Route path="productos/nuevo" element={<AdminAgregarProducto agregarProducto={agregarProductoCatalogo} />} />
+        </Route>
       </Routes>
       <Footer />
     </>

@@ -1,8 +1,7 @@
 import { Alert, Button, Card, Col, Container, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { productosIniciales } from '../data/productosIniciales'
 
-function Carrito({ carrito, total, totalCompra, eliminarProducto, comprar }) {
+function Carrito({ productos, carrito, total, totalCompra, eliminarProducto, comprar }) {
   return (
     <main id="contenido" tabIndex={-1} className="seccion fondo-suave">
       <Container>
@@ -20,7 +19,8 @@ function Carrito({ carrito, total, totalCompra, eliminarProducto, comprar }) {
             {carrito.length === 0 ? (
               <Alert variant="info">Tu carrito está vacío. Explora el catálogo para agregar productos.</Alert>
             ) : carrito.map((item) => {
-              const producto = productosIniciales.find((producto) => producto.id === item.id)
+              const producto = productos.find((producto) => producto.id === item.id)
+              if (!producto) return null
               return (
                 <Card as="article" className="mb-3" key={item.id}>
                   <Card.Body>

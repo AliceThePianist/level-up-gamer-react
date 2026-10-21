@@ -29,7 +29,7 @@ function Login({ alIniciarSesion }) {
         return
       }
       alIniciarSesion(usuario)
-      navigate('/')
+      navigate(usuario.rol === 'admin' ? '/admin/productos' : '/')
     } catch {
       setError('No se pudo iniciar sesión. Revisa que el almacenamiento del navegador esté disponible y que los datos de demostración sean válidos.')
     }
@@ -45,6 +45,7 @@ function Login({ alIniciarSesion }) {
                 <p className="etiqueta">BIENVENIDO A LEVEL-UP GAMER</p>
                 <h1>Iniciar sesión</h1>
                 <Alert variant="info">Demostración académica. Usa solo datos y contraseñas ficticios: se guardan en texto plano en este navegador. No es autenticación segura.</Alert>
+                <Alert variant="secondary">Administrador de prueba: admin@tienda.cl / 123456</Alert>
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form noValidate onSubmit={ingresar}>
                   <Form.Group controlId="login-correo" className="mb-3">

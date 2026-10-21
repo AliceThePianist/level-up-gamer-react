@@ -1,7 +1,6 @@
 import { Button, Card, Col, Container, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
-import { productosIniciales } from '../data/productosIniciales'
 import banner from '../assets/images/banner-gamer.jpg'
 import blogComputador from '../assets/images/blog-computador.jpg'
 import blogEspacio from '../assets/images/blog-espacio-gamer.jpg'
@@ -20,7 +19,7 @@ const categorias = [
   ['Servicio Técnico', 'Soporte para cuidar tus equipos.'],
 ]
 
-function Home({ agregarProducto }) {
+function Home({ productos, agregarProducto }) {
   return (
     <main id="contenido" tabIndex={-1}>
       <section className="banner-principal" aria-labelledby="titulo-inicio">
@@ -75,7 +74,7 @@ function Home({ agregarProducto }) {
           <h2 id="titulo-destacados">Productos destacados</h2>
           <p className="text-secondary mb-4">Una selección para conocer Level-Up Gamer. Agrega tus favoritos y simula tu compra.</p>
           <Row className="g-4">
-            {productosIniciales.slice(0, 4).map((producto) => (
+            {productos.slice(0, 4).map((producto) => (
               <Col key={producto.id} sm={6} lg={3}>
                 <ProductCard producto={producto} agregarProducto={agregarProducto} mostrarDescripcion={false} tituloAs="h3" />
               </Col>

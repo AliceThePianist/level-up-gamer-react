@@ -1,17 +1,16 @@
 import { Col, Container, Row } from 'react-bootstrap'
 import ProductCard from '../components/ProductCard'
-import { productosIniciales } from '../data/productosIniciales'
 
-function Productos({ agregarProducto }) {
+function Productos({ productos, agregarProducto }) {
   return (
     <main id="contenido" tabIndex={-1} className="seccion fondo-suave">
       <Container>
         <p className="etiqueta">TU SIGUIENTE NIVEL COMIENZA AQUÍ</p>
         <h1>Catálogo de productos</h1>
         <p className="text-secondary">Conoce nuestra selección de juegos, accesorios y equipos gamers. Agrega tus favoritos y simula tu compra.</p>
-        <p className="mb-4">{productosIniciales.length} productos disponibles para explorar</p>
+        <p className="mb-4">{productos.length} productos disponibles para explorar</p>
         <Row className="g-4">
-          {productosIniciales.map((producto) => (
+          {productos.map((producto) => (
             <Col key={producto.id} xs={12} md={6} lg={4}>
               <ProductCard producto={producto} agregarProducto={agregarProducto} />
             </Col>

@@ -20,6 +20,7 @@ function Navbar({ unidades, usuarioSesion, cerrarSesion }) {
               <Nav.Link as={Link} to="/#novedades" eventKey="novedades">Novedades</Nav.Link>
               <Nav.Link as={NavLink} to="/carrito" eventKey="carrito">Carrito ({unidades})</Nav.Link>
               <Nav.Link as={NavLink} to="/registro" eventKey="registro">Registro</Nav.Link>
+              {usuarioSesion?.rol === 'admin' && <Nav.Link as={NavLink} to="/admin" eventKey="admin">Administración</Nav.Link>}
               {!usuarioSesion && <Nav.Link as={NavLink} to="/login" eventKey="login">Iniciar sesión</Nav.Link>}
             </Nav>
             {usuarioSesion && (
