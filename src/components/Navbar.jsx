@@ -13,10 +13,11 @@ function Navbar() {
           <BootstrapNavbar.Collapse id="menu-principal">
             <Nav className="ms-auto">
               <Nav.Link as={NavLink} to="/" end eventKey="inicio">Inicio</Nav.Link>
-              <Nav.Link href="#categorias" eventKey="categorias">Categorías</Nav.Link>
-              <Nav.Link href="#destacados" eventKey="destacados">Destacados</Nav.Link>
-              <Nav.Link href="#beneficios" eventKey="beneficios">Programa LevelUp</Nav.Link>
-              <Nav.Link href="#novedades" eventKey="novedades">Novedades</Nav.Link>
+              <Nav.Link as={NavLink} to="/productos" eventKey="productos">Productos</Nav.Link>
+              <Nav.Link href="/#categorias" eventKey="categorias">Categorías</Nav.Link>
+              <Nav.Link href="/#destacados" eventKey="destacados">Destacados</Nav.Link>
+              <Nav.Link href="/#beneficios" eventKey="beneficios">Programa LevelUp</Nav.Link>
+              <Nav.Link href="/#novedades" eventKey="novedades">Novedades</Nav.Link>
             </Nav>
           </BootstrapNavbar.Collapse>
         </Container>

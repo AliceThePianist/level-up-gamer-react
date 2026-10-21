@@ -1,13 +1,12 @@
 import { Button, Card, Col, Container, Row } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
+import ProductCard from '../components/ProductCard'
+import { productosIniciales } from '../data/productosIniciales'
 import banner from '../assets/images/banner-gamer.jpg'
-import catan from '../assets/images/catan.jpg'
-import control from '../assets/images/controlador-xbox.jpg'
-import consola from '../assets/images/playstation-5.jpg'
-import computador from '../assets/images/computador-gamer.jpg'
 import blogComputador from '../assets/images/blog-computador.jpg'
 import blogEspacio from '../assets/images/blog-espacio-gamer.jpg'
 
-// Contenido estático de portada; el catálogo funcional se implementará después.
+// Categorías de productos y servicios del diseño anterior.
 const categorias = [
   ['Juegos de Mesa', 'Comparte una nueva partida con amigos y familia.'],
   ['Accesorios', 'Audífonos, controles y complementos para jugar.'],
@@ -19,13 +18,6 @@ const categorias = [
   ['Poleras Personalizadas', 'Lleva tu estilo gamer contigo.'],
   ['Polerones Gamers', 'Diseños para jugar a tu manera.'],
   ['Servicio Técnico', 'Soporte para cuidar tus equipos.'],
-]
-
-const destacados = [
-  { nombre: 'Catan', categoria: 'Juegos de Mesa', precio: '$29.990', imagen: catan, alt: 'Juego de mesa Catan con tablero y fichas' },
-  { nombre: 'Controlador Inalámbrico Xbox Series X', categoria: 'Accesorios', precio: '$59.990', imagen: control, alt: 'Controlador inalámbrico Xbox negro' },
-  { nombre: 'PlayStation 5', categoria: 'Consolas', precio: '$549.990', imagen: consola, alt: 'Consola PlayStation 5 blanca junto a su controlador' },
-  { nombre: 'PC Gamer ASUS ROG Strix', categoria: 'Computadores Gamers', precio: '$1.299.990', imagen: computador, alt: 'Computador gamer con iluminación azul y verde' },
 ]
 
 function Home() {
@@ -83,19 +75,13 @@ function Home() {
           <h2 id="titulo-destacados">Productos destacados</h2>
           <p className="text-secondary mb-4">Una selección para conocer Level-Up Gamer. Compras próximamente.</p>
           <Row className="g-4">
-            {destacados.map((producto) => (
-              <Col key={producto.nombre} sm={6} lg={3}>
-                <Card as="article" className="tarjeta-producto h-100">
-                  <Card.Img variant="top" src={producto.imagen} alt={producto.alt} loading="lazy" />
-                  <Card.Body className="d-flex flex-column">
-                    <p className="etiqueta small">{producto.categoria}</p>
-                    <h3 className="h5 mb-4">{producto.nombre}</h3>
-                    <p className="precio mt-auto mb-0">{producto.precio} <span>CLP</span></p>
-                  </Card.Body>
-                </Card>
+            {productosIniciales.slice(0, 4).map((producto) => (
+              <Col key={producto.id} sm={6} lg={3}>
+                <ProductCard producto={producto} mostrarDescripcion={false} tituloAs="h3" />
               </Col>
             ))}
           </Row>
+          <Button as={Link} to="/productos" variant="primary" className="mt-4">Ver catálogo completo</Button>
         </Container>
       </section>
 
