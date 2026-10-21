@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import Home from './views/Home'
 import Productos from './views/Productos'
 import Carrito from './views/Carrito'
+import Registro from './views/Registro'
 import { productosIniciales } from './data/productosIniciales'
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
       <a className="saltar-contenido" href="#contenido">Saltar al contenido</a>
       <Navbar unidades={unidades} />
       <Routes>
+        <Route path="/registro" element={<Registro />} />
         <Route path="/" element={<Home agregarProducto={agregarProducto} />} />
         <Route path="/productos" element={<Productos agregarProducto={agregarProducto} />} />
         <Route path="/carrito" element={<Carrito carrito={carrito} total={total} totalCompra={totalCompra} eliminarProducto={eliminarProducto} comprar={comprar} />} />

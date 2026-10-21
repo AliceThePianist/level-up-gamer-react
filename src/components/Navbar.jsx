@@ -19,6 +19,7 @@ function Navbar({ unidades }) {
               <Nav.Link as={Link} to="/#beneficios" eventKey="beneficios">Programa LevelUp</Nav.Link>
               <Nav.Link as={Link} to="/#novedades" eventKey="novedades">Novedades</Nav.Link>
               <Nav.Link as={NavLink} to="/carrito" eventKey="carrito">Carrito ({unidades})</Nav.Link>
+              <Nav.Link as={NavLink} to="/registro" eventKey="registro">Registro</Nav.Link>
             </Nav>
           </BootstrapNavbar.Collapse>
         </Container>
