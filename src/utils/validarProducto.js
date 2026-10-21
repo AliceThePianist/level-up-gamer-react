@@ -1,4 +1,4 @@
-export function validarProducto(producto) {
+export function validarProducto(producto, imagenActual = '') {
   const errores = {}
   if (producto.nombre.trim().length < 3) errores.nombre = 'Ingresa un nombre de al menos 3 caracteres.'
   if (!producto.categoria.trim()) errores.categoria = 'Ingresa una categoría.'
@@ -10,7 +10,10 @@ export function validarProducto(producto) {
     errores.stock = 'Ingresa un stock entero mayor o igual a cero.'
   }
   try {
-    const url = new URL(producto.imagen.trim())
+    // Al editar se permite conservar el recurso local original servido por Vite.
+    const imagen = producto.imagen.trim()
+    if (imagen && imagen === imagenActual && (imagen.startsWith('/src/assets/') || imagen.startsWith('/assets/'))) return errores
+    const url = new URL(imagen)
     if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Protocolo inválido')
   } catch {
     errores.imagen = 'Ingresa una URL de imagen que comience con http:// o https://.'

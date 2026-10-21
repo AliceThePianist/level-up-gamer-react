@@ -35,7 +35,10 @@ function AdminProductos({ productos, eliminarProducto }) {
               <tr key={producto.id}>
                 <td>{producto.id}</td><td>{producto.nombre}</td><td>{producto.categoria}</td>
                 <td>${producto.precio.toLocaleString('es-CL')}</td><td>{producto.stock}</td>
-                <td><Button size="sm" variant="outline-danger" onClick={() => setSeleccionado(producto)} aria-label={`Eliminar ${producto.nombre}`}>Eliminar</Button></td>
+                <td>
+                  <Button as={Link} to={`/admin/productos/${producto.id}/editar`} size="sm" variant="outline-primary" className="me-2 mb-1" aria-label={`Editar ${producto.nombre}`}>Editar</Button>
+                  <Button size="sm" variant="outline-danger" onClick={() => setSeleccionado(producto)} aria-label={`Eliminar ${producto.nombre}`}>Eliminar</Button>
+                </td>
               </tr>
             ))}
           </tbody>

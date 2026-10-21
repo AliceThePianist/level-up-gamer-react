@@ -17,7 +17,8 @@ export function cargarProductos() {
       productos: productos.map((producto) => {
         // Vite cambia la URL de los recursos al compilar; resolver las imágenes originales actuales.
         const inicial = productosIniciales.find((inicial) => inicial.id === producto.id)
-        return inicial ? { ...producto, imagen: inicial.imagen } : producto
+        const recursoLocal = producto.imagen.startsWith('/src/assets/') || producto.imagen.startsWith('/assets/')
+        return inicial && recursoLocal ? { ...producto, imagen: inicial.imagen } : producto
       }),
       error: '',
     }

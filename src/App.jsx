@@ -13,6 +13,7 @@ import { cargarProductos, guardarProductos } from './data/productos'
 import AdminLayout from './views/admin/AdminLayout'
 import AdminProductos from './views/admin/AdminProductos'
 import AdminAgregarProducto from './views/admin/AdminAgregarProducto'
+import AdminEditarProducto from './views/admin/AdminEditarProducto'
 
 function App() {
   const [catalogo, setCatalogo] = useState(cargarProductos)
@@ -86,6 +87,13 @@ function App() {
     setCarrito((actual) => actual.filter((item) => item.id !== id))
   }
 
+  function editarProductoCatalogo(id, datos) {
+    if (usuarioSesion?.rol !== 'admin' || catalogo.error || !productos.some((producto) => producto.id === id)) throw new Error('Acción no disponible')
+    const nuevos = productos.map((producto) => producto.id === id ? { ...datos, id } : producto)
+    guardarProductos(nuevos)
+    setCatalogo({ productos: nuevos, error: '' })
+  }
+
   return (
     <>
       <a className="saltar-contenido" href="#contenido">Saltar al contenido</a>
@@ -102,6 +110,7 @@ function App() {
           <Route index element={<Navigate to="productos" replace />} />
           <Route path="productos" element={<AdminProductos productos={productos} eliminarProducto={eliminarProductoCatalogo} />} />
           <Route path="productos/nuevo" element={<AdminAgregarProducto agregarProducto={agregarProductoCatalogo} />} />
+          <Route path="productos/:id/editar" element={<AdminEditarProducto productos={productos} editarProducto={editarProductoCatalogo} />} />
         </Route>
       </Routes>
       <Footer />
