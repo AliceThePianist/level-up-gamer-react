@@ -43,7 +43,7 @@ function Home({ productos, carrito, agregarProducto }) {
           <strong className="descuento">20%</strong>
           <div>
             <p className="fw-bold mb-1">Tu próxima partida tiene un beneficio Duoc.</p>
-            <p className="mb-0">Registra tu correo Duoc para obtener el beneficio del 20%. Su aplicación al carrito estará disponible próximamente.</p>
+            <p className="mb-0">Registra tu correo Duoc e inicia sesión para obtener un 20% de descuento en tu compra.</p>
           </div>
         </Container>
       </aside>

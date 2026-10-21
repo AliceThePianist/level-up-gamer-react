@@ -1,17 +1,19 @@
 import { Alert, Button, Card, Col, Container, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 
-function Carrito({ productos, carrito, total, totalCompra, eliminarProducto, comprar }) {
+function Carrito({ productos, carrito, subtotal, descuento, total, ultimaCompra, eliminarProducto, comprar }) {
   return (
     <main id="contenido" tabIndex={-1} className="seccion fondo-suave">
       <Container>
         <p className="etiqueta">TU PRÓXIMA PARTIDA</p>
         <h1>Carrito de compras</h1>
         <p className="text-secondary">Compra simulada: no se realizan pagos ni envíos reales.</p>
-        {totalCompra !== null && (
+        {ultimaCompra !== null && (
           <Alert variant="success" role="status">
             <Alert.Heading>¡Compra simulada realizada!</Alert.Heading>
-            <p className="mb-0">Total de la última compra: <strong>${totalCompra.toLocaleString('es-CL')} CLP</strong>.</p>
+            <p>Subtotal de la última compra: ${ultimaCompra.subtotal.toLocaleString('es-CL')} CLP</p>
+            {ultimaCompra.descuento > 0 && <p>Beneficio Duoc aplicado: ${ultimaCompra.descuento.toLocaleString('es-CL')} CLP</p>}
+            <p className="mb-0">Total de la última compra: <strong>${ultimaCompra.total.toLocaleString('es-CL')} CLP</strong>.</p>
           </Alert>
         )}
         <Row className="g-4">
@@ -39,6 +41,8 @@ function Carrito({ productos, carrito, total, totalCompra, eliminarProducto, com
             <Card>
               <Card.Body>
                 <h2 className="h4">Resumen de compra</h2>
+                <p>Subtotal de compra: ${subtotal.toLocaleString('es-CL')} CLP</p>
+                <p>{descuento > 0 ? 'Descuento Duoc (20%)' : 'Descuento'}: ${descuento.toLocaleString('es-CL')} CLP</p>
                 <p className="precio">Total: ${total.toLocaleString('es-CL')} <span>CLP</span></p>
                 <Button className="w-100" variant="success" onClick={comprar} disabled={carrito.length === 0}>Comprar</Button>
               </Card.Body>

@@ -45,7 +45,7 @@ function Registro() {
         return
       }
       setMensaje(resultado.usuario.descuento === 20
-        ? 'Registro exitoso. Beneficio Duoc del 20% registrado; todavía no se aplica al carrito.'
+        ? 'Registro exitoso. Beneficio Duoc del 20% registrado. Inicia sesión para aplicarlo a tu compra.'
         : 'Registro exitoso. Ya puedes iniciar sesión.')
       setFormulario(formularioInicial)
     } catch {
@@ -93,9 +93,8 @@ function Registro() {
                     ))}
                     <Col xs={12}>
                       <p className="text-secondary small">
-                      Las cuentas con correo institucional Duoc pueden registrar
-                      el beneficio del 20%. Su aplicación a las compras estará
-                      disponible próximamente.
+                      Las cuentas con correo institucional Duoc reciben el beneficio
+                      del 20% al iniciar sesión y realizar una compra.
                       </p>
                       <Button type="submit" variant="success" className="w-100">Registrarme</Button>
                     </Col>
