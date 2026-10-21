@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Alert, Container } from 'react-bootstrap'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -6,9 +7,24 @@ import Home from './views/Home'
 import Productos from './views/Productos'
 import Carrito from './views/Carrito'
 import Registro from './views/Registro'
+import Login from './views/Login'
+import { leerSesion, eliminarSesion } from './data/sesion'
 import { productosIniciales } from './data/productosIniciales'
 
 function App() {
+  const [usuarioSesion, setUsuarioSesion] = useState(leerSesion)
+  const [errorSesion, setErrorSesion] = useState('')
+
+  function cerrarSesion() {
+    try {
+      eliminarSesion()
+      setUsuarioSesion(null)
+      setErrorSesion('')
+    } catch {
+      setErrorSesion('No se pudo cerrar la sesión. Revisa el almacenamiento del navegador e inténtalo nuevamente.')
+    }
+  }
+
   // Solo guardamos identificador y cantidad; los datos del producto tienen una única fuente.
   const [carrito, setCarrito] = useState([])
   const [totalCompra, setTotalCompra] = useState(null)
@@ -50,8 +66,10 @@ function App() {
   return (
     <>
       <a className="saltar-contenido" href="#contenido">Saltar al contenido</a>
-      <Navbar unidades={unidades} />
+      <Navbar unidades={unidades} usuarioSesion={usuarioSesion} cerrarSesion={cerrarSesion} />
+      {errorSesion && <Container className="mt-3"><Alert variant="danger">{errorSesion}</Alert></Container>}
       <Routes>
+        <Route path="/login" element={<Login alIniciarSesion={setUsuarioSesion} />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/" element={<Home agregarProducto={agregarProducto} />} />
         <Route path="/productos" element={<Productos agregarProducto={agregarProducto} />} />
