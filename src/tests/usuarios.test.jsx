@@ -7,15 +7,15 @@ import App from '../App'
 test('registro completo permite iniciar sesión y conserva el perfil tras recargar', async () => {
   const user = userEvent.setup()
   const vista = render(<MemoryRouter initialEntries={['/registro']}><App /></MemoryRouter>)
-  for (const [campo, valor] of Object.entries({ Nombre: 'Alumno', Apellido: 'Ficticio', RUT: '11111111-1', 'Correo electrónico': 'alumno@duoc.cl', 'Contraseña de prueba': 'Ficticia123!', 'Confirmar contraseña de prueba': 'Ficticia123!' })) {
+  for (const [campo, valor] of Object.entries({ Nombre: 'Alumno', Apellido: 'Ficticio', RUT: '11111111-1', 'Correo electrónico': 'alumno@duoc.cl', 'Contraseña': 'Ficticia123!', 'Confirmar contraseña': 'Ficticia123!' })) {
     await user.type(screen.getByLabelText(campo, { exact: true }), valor)
   }
   fireEvent.change(screen.getByLabelText('Fecha de nacimiento'), { target: { value: '2000-01-01' } })
   await user.click(screen.getByRole('button', { name: 'Registrarme' }))
-  expect(screen.getByText(/Registro de demostración exitoso. Beneficio Duoc/)).toBeInTheDocument()
+  expect(screen.getByText(/Registro exitoso. Beneficio Duoc/)).toBeInTheDocument()
   await user.click(screen.getByRole('link', { name: 'Iniciar sesión', exact: true }))
   await user.type(screen.getByLabelText('Correo electrónico'), 'alumno@duoc.cl')
-  await user.type(screen.getByLabelText('Contraseña ficticia'), 'Ficticia123!')
+  await user.type(screen.getByLabelText('Contraseña'), 'Ficticia123!')
   await user.click(screen.getByRole('button', { name: 'Ingresar' }))
   expect(screen.getByText('Hola, Alumno')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: /Desafía tus límites/ })).toBeInTheDocument()
@@ -30,9 +30,9 @@ test('login muestra errores de campos y credenciales sin crear sesión', async (
   render(<MemoryRouter initialEntries={['/login']}><App /></MemoryRouter>)
   await user.click(screen.getByRole('button', { name: 'Ingresar' }))
   expect(screen.getByText('Ingresa un correo electrónico válido.')).toBeInTheDocument()
-  expect(screen.getByText(/Ingresa tu contraseña ficticia de al menos/)).toBeInTheDocument()
+  expect(screen.getByText(/Ingresa tu contraseña de al menos/)).toBeInTheDocument()
   await user.type(screen.getByLabelText('Correo electrónico'), 'nadie@example.com')
-  await user.type(screen.getByLabelText('Contraseña ficticia'), 'Incorrecta123')
+  await user.type(screen.getByLabelText('Contraseña'), 'Incorrecta123')
   await user.click(screen.getByRole('button', { name: 'Ingresar' }))
   expect(screen.getByText('Correo o contraseña incorrectos.')).toBeInTheDocument()
   expect(sessionStorage.getItem('usuarioSesion')).toBeNull()

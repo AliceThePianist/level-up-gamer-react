@@ -23,9 +23,9 @@ export function validarRegistro(formulario, hoy = new Date()) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formulario.correo.trim())) {
     errores.correo = 'Ingresa un correo válido, por ejemplo nombre@correo.cl.'
   }
-  if (formulario.contrasena.trim().length < 6) errores.contrasena = 'Usa una contraseña de prueba de al menos 6 caracteres.'
+  if (formulario.contrasena.trim().length < 6) errores.contrasena = 'Usa una contraseña de al menos 6 caracteres.'
   if (!formulario.confirmacion) {
-    errores.confirmacion = 'Confirma tu contraseña de prueba.'
+    errores.confirmacion = 'Confirma tu contraseña.'
   } else if (formulario.contrasena !== formulario.confirmacion) {
     errores.confirmacion = 'Las contraseñas no coinciden.'
   }

@@ -18,6 +18,7 @@ function Footer() {
           </Col>
         </Row>
         <hr className="my-4" />
+        <p className="small">Proyecto educativo: no procesa pagos ni envíos reales. No reutilices contraseñas personales.</p>
         <p className="small mb-0">© {anioActual} Level-Up Gamer. Todos los derechos reservados.</p>
       </Container>
     </footer>

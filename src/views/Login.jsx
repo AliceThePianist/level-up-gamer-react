@@ -18,7 +18,7 @@ function Login({ alIniciarSesion }) {
       nuevosErrores.correo = 'Ingresa un correo electrónico válido.'
     }
     if (contrasena.trim().length < 6) {
-      nuevosErrores.contrasena = 'Ingresa tu contraseña ficticia de al menos 6 caracteres.'
+      nuevosErrores.contrasena = 'Ingresa tu contraseña de al menos 6 caracteres.'
     }
     setErrores(nuevosErrores)
     if (Object.keys(nuevosErrores).length > 0) return
@@ -31,7 +31,7 @@ function Login({ alIniciarSesion }) {
       alIniciarSesion(usuario)
       navigate(usuario.rol === 'admin' ? '/admin/productos' : '/')
     } catch {
-      setError('No se pudo iniciar sesión. Revisa que el almacenamiento del navegador esté disponible y que los datos de demostración sean válidos.')
+      setError('No se pudo iniciar sesión. Revisa que el almacenamiento del navegador esté disponible y que los datos guardados sean válidos.')
     }
   }
 
@@ -44,8 +44,7 @@ function Login({ alIniciarSesion }) {
               <Card.Body className="p-4">
                 <p className="etiqueta">BIENVENIDO A LEVEL-UP GAMER</p>
                 <h1>Iniciar sesión</h1>
-                <Alert variant="info">Demostración académica. Usa solo datos y contraseñas ficticios: se guardan en texto plano en este navegador. No es autenticación segura.</Alert>
-                <Alert variant="secondary">Administrador de prueba: admin@tienda.cl / 123456</Alert>
+                <p className="text-secondary small">Sitio educativo. No reutilices contraseñas personales: los datos se almacenan en este navegador.</p>
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form noValidate onSubmit={ingresar}>
                   <Form.Group controlId="login-correo" className="mb-3">
@@ -54,14 +53,13 @@ function Login({ alIniciarSesion }) {
                     <Form.Control.Feedback type="invalid" id="error-correo">{errores.correo}</Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group controlId="login-contrasena" className="mb-3">
-                    <Form.Label>Contraseña ficticia</Form.Label>
+                    <Form.Label>Contraseña</Form.Label>
                     <Form.Control type="password" value={contrasena} onChange={(event) => { setContrasena(event.target.value); setError('') }} isInvalid={!!errores.contrasena} aria-describedby="error-contrasena" autoComplete="off" required />
                     <Form.Control.Feedback type="invalid" id="error-contrasena">{errores.contrasena}</Form.Control.Feedback>
                   </Form.Group>
                   <Button type="submit" variant="success" className="w-100">Ingresar</Button>
                 </Form>
-                <p className="mt-3 mb-0">¿Aún no tienes un usuario de prueba? <Link to="/registro">Registrarte</Link></p>
-                <p className="text-secondary small mt-3 mb-0">Los perfiles antiguos sin contraseña no permiten iniciar sesión. Registra un nuevo perfil con otro correo ficticio; los anteriores se conservan.</p>
+                <p className="mt-3 mb-0">¿Aún no tienes una cuenta? <Link to="/registro">Registrarte</Link></p>
               </Card.Body>
             </Card>
           </Col>

@@ -13,8 +13,8 @@ const campos = [
   { nombre: 'rut', etiqueta: 'RUT', tipo: 'text', maxLength: 12 },
   { nombre: 'fechaNacimiento', etiqueta: 'Fecha de nacimiento', tipo: 'date' },
   { nombre: 'correo', etiqueta: 'Correo electrónico', tipo: 'email' },
-  { nombre: 'contrasena', etiqueta: 'Contraseña de prueba', tipo: 'password' },
-  { nombre: 'confirmacion', etiqueta: 'Confirmar contraseña de prueba', tipo: 'password' },
+  { nombre: 'contrasena', etiqueta: 'Contraseña', tipo: 'password' },
+  { nombre: 'confirmacion', etiqueta: 'Confirmar contraseña', tipo: 'password' },
 ]
 
 function Registro() {
@@ -45,8 +45,8 @@ function Registro() {
         return
       }
       setMensaje(resultado.usuario.descuento === 20
-        ? 'Registro de demostración exitoso. Beneficio Duoc del 20% registrado; todavía no se aplica al carrito.'
-        : 'Registro de demostración exitoso. Tu perfil y contraseña ficticia se guardaron para las pruebas.')
+        ? 'Registro exitoso. Beneficio Duoc del 20% registrado; todavía no se aplica al carrito.'
+        : 'Registro exitoso. Ya puedes iniciar sesión.')
       setFormulario(formularioInicial)
     } catch {
       setErrorGuardado('No se pudo guardar el registro. El almacenamiento puede estar bloqueado o contener datos inválidos. No se modificaron los registros anteriores.')
@@ -63,7 +63,10 @@ function Registro() {
                 <p className="etiqueta">COMUNIDAD LEVEL-UP GAMER</p>
                 <h1>Registro de usuarios</h1>
                 <p>Completa todos los campos. Debes tener al menos 18 años.</p>
-                <Alert variant="info">Simulación académica: utiliza datos ficticios y una contraseña de prueba. La contraseña ficticia se guarda en texto plano en este navegador. No uses datos reales: esto no es autenticación segura.</Alert>
+                <p className="text-secondary small">
+                Este es un sitio educativo sin pagos reales.
+                No utilices datos personales reales ni reutilices contraseñas.
+                </p>
                 {mensaje && <Alert variant="success" role="status">{mensaje}</Alert>}
                 {errorGuardado && <Alert variant="danger">{errorGuardado}</Alert>}
                 {Object.values(errores).some(Boolean) && <Alert variant="danger">Revisa los campos indicados antes de continuar.</Alert>}
@@ -89,7 +92,11 @@ function Registro() {
                       </Col>
                     ))}
                     <Col xs={12}>
-                      <p className="text-secondary small">Con @duoc.cl o @duocuc.cl se registra un beneficio simulado del 20%, aún sin aplicación al carrito. El perfil y la contraseña ficticia se guardan en este navegador; la confirmación no se guarda.</p>
+                      <p className="text-secondary small">
+                      Las cuentas con correo institucional Duoc pueden registrar
+                      el beneficio del 20%. Su aplicación a las compras estará
+                      disponible próximamente.
+                      </p>
                       <Button type="submit" variant="success" className="w-100">Registrarme</Button>
                     </Col>
                   </Row>
