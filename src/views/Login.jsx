@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Alert, Button, Card, Col, Container, Form, Row } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { iniciarSesion } from '../data/sesion'
+import { ROL_ADMINISTRADOR } from '../data/roles'
 
 function Login({ alIniciarSesion }) {
   const [correo, setCorreo] = useState('')
@@ -29,7 +30,7 @@ function Login({ alIniciarSesion }) {
         return
       }
       alIniciarSesion(usuario)
-      navigate(usuario.rol === 'admin' ? '/admin/productos' : '/')
+      navigate(usuario.rol === ROL_ADMINISTRADOR ? '/admin/productos' : '/')
     } catch {
       setError('No se pudo iniciar sesión. Revisa que el almacenamiento del navegador esté disponible y que los datos guardados sean válidos.')
     }

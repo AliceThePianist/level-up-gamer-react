@@ -9,6 +9,7 @@ import Carrito from './views/Carrito'
 import Registro from './views/Registro'
 import Login from './views/Login'
 import { leerSesion, eliminarSesion } from './data/sesion'
+import { ROL_ADMINISTRADOR, ROL_CLIENTE } from './data/roles'
 import { cargarProductos, guardarProductos } from './data/productos'
 import AdminLayout from './views/admin/AdminLayout'
 import AdminProductos from './views/admin/AdminProductos'
@@ -42,7 +43,7 @@ function App() {
     const producto = productos.find((producto) => producto.id === item.id)
     return suma + (producto ? producto.precio * item.cantidad : 0)
   }, 0)
-  const descuento = usuarioSesion?.rol === 'cliente' && usuarioSesion.descuento === 20 ? Math.round(subtotal * 0.2) : 0
+  const descuento = usuarioSesion?.rol === ROL_CLIENTE && usuarioSesion.descuento === 20 ? Math.round(subtotal * 0.2) : 0
   const total = subtotal - descuento
 
   // Navegar sin recargar conserva el carrito y permite volver a las secciones de Inicio.
@@ -77,7 +78,7 @@ function App() {
   }
 
   function agregarProductoCatalogo(datos) {
-    if (usuarioSesion?.rol !== 'admin' || catalogo.error) throw new Error('Acción no disponible')
+    if (usuarioSesion?.rol !== ROL_ADMINISTRADOR || catalogo.error) throw new Error('Acción no disponible')
     // Supera los IDs actuales y los reservados de los cuatro productos iniciales.
     const id = Math.max(Date.now(), ...productos.map((producto) => producto.id + 1), 5)
     const nuevos = [...productos, { ...datos, id }]
@@ -86,7 +87,7 @@ function App() {
   }
 
   function eliminarProductoCatalogo(id) {
-    if (usuarioSesion?.rol !== 'admin' || catalogo.error) throw new Error('Acción no disponible')
+    if (usuarioSesion?.rol !== ROL_ADMINISTRADOR || catalogo.error) throw new Error('Acción no disponible')
     const nuevos = productos.filter((producto) => producto.id !== id)
     guardarProductos(nuevos)
     setCatalogo({ productos: nuevos, error: '' })
@@ -94,7 +95,7 @@ function App() {
   }
 
   function editarProductoCatalogo(id, datos) {
-    if (usuarioSesion?.rol !== 'admin' || catalogo.error || !productos.some((producto) => producto.id === id)) throw new Error('Acción no disponible')
+    if (usuarioSesion?.rol !== ROL_ADMINISTRADOR || catalogo.error || !productos.some((producto) => producto.id === id)) throw new Error('Acción no disponible')
     const nuevos = productos.map((producto) => producto.id === id ? { ...datos, id } : producto)
     guardarProductos(nuevos)
     setCatalogo({ productos: nuevos, error: '' })

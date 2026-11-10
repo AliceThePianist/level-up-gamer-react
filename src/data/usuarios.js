@@ -1,3 +1,8 @@
+import { ROL_CLIENTE } from './roles.js'
+
+// Esta dirección pertenece a la cuenta administrativa del ejemplo académico.
+export const CORREO_ADMIN_DEMO = 'admin@tienda.cl'
+
 // Solo demostración académica: guarda contraseñas ficticias en texto plano.
 export function obtenerUsuarios() {
   const usuarios = JSON.parse(localStorage.getItem('levelup-usuarios-demo') || '[]')
@@ -8,8 +13,12 @@ export function obtenerUsuarios() {
 }
 
 export function registrarUsuario(formulario) {
-  const usuarios = obtenerUsuarios()
   const correo = formulario.correo.trim().toLowerCase()
+  if (correo === CORREO_ADMIN_DEMO) {
+    return { error: 'Este correo no está disponible para el registro.' }
+  }
+
+  const usuarios = obtenerUsuarios()
   if (usuarios.some((usuario) => usuario.correo.trim().toLowerCase() === correo)) {
     return { error: 'Este correo ya está registrado.' }
   }
@@ -23,6 +32,7 @@ export function registrarUsuario(formulario) {
     fechaNacimiento: formulario.fechaNacimiento,
     correo,
     contrasena: formulario.contrasena,
+    rol: ROL_CLIENTE,
     descuento: dominio === 'duoc.cl' || dominio === 'duocuc.cl' ? 20 : 0,
   }
   localStorage.setItem('levelup-usuarios-demo', JSON.stringify([...usuarios, usuario]))

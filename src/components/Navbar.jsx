@@ -1,5 +1,6 @@
 import { Button, Container, Nav, Navbar as BootstrapNavbar } from 'react-bootstrap'
 import { Link, NavLink } from 'react-router-dom'
+import { ROL_ADMINISTRADOR } from '../data/roles'
 
 function Navbar({ unidades, usuarioSesion, cerrarSesion }) {
   return (
@@ -19,9 +20,13 @@ function Navbar({ unidades, usuarioSesion, cerrarSesion }) {
               <Nav.Link as={Link} to="/#beneficios" eventKey="beneficios">Programa LevelUp</Nav.Link>
               <Nav.Link as={Link} to="/#novedades" eventKey="novedades">Novedades</Nav.Link>
               <Nav.Link as={NavLink} to="/carrito" eventKey="carrito">Carrito ({unidades})</Nav.Link>
-              <Nav.Link as={NavLink} to="/registro" eventKey="registro">Registro</Nav.Link>
-              {usuarioSesion?.rol === 'admin' && <Nav.Link as={NavLink} to="/admin" eventKey="admin">Administración</Nav.Link>}
-              {!usuarioSesion && <Nav.Link as={NavLink} to="/login" eventKey="login">Iniciar sesión</Nav.Link>}
+              {usuarioSesion?.rol === ROL_ADMINISTRADOR && <Nav.Link as={NavLink} to="/admin" eventKey="admin">Administración</Nav.Link>}
+              {!usuarioSesion && (
+                <>
+                  <Nav.Link as={NavLink} to="/registro" eventKey="registro">Registro</Nav.Link>
+                  <Nav.Link as={NavLink} to="/login" eventKey="login">Iniciar sesión</Nav.Link>
+                </>
+              )}
             </Nav>
             {usuarioSesion && (
               <div className="d-flex flex-wrap justify-content-xl-end align-items-center gap-2 mt-2">

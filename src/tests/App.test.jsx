@@ -30,10 +30,10 @@ test('carrito vacío impide comprar', () => {
   expect(screen.getByRole('button', { name: 'Comprar', exact: true })).toBeDisabled()
 })
 
-test.each(['/admin/productos', '/admin/productos/nuevo', '/admin/productos/1/editar'])('bloquea %s para un cliente', (ruta) => {
+test.each(['/admin', '/admin/productos', '/admin/productos/nuevo', '/admin/productos/1/editar'])('bloquea %s para un cliente', (ruta) => {
   sessionStorage.setItem('usuarioSesion', JSON.stringify({ nombre: 'Cliente', correo: 'cliente@example.com', rol: 'cliente' }))
   abrir(ruta)
-  expect(screen.getByText(/Debes iniciar sesión como administrador/)).toBeInTheDocument()
+  expect(screen.getByText(/Tu cuenta no tiene acceso a la administración/)).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Administración', exact: true })).not.toBeInTheDocument()
 })
 

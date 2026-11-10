@@ -24,9 +24,9 @@ test('rechaza formulario vacío', () => {
 test('rechaza correo incorrecto y contraseñas distintas', () => {
   expect(validarRegistro({ ...formulario, correo: 'sin-arroba', confirmacion: 'OtraClave' }, hoy)).toMatchObject({ correo: expect.any(String), confirmacion: expect.any(String) })
 })
-test('registro conserva beneficio Duoc y no guarda confirmación', () => {
-  registrarUsuario(formulario)
-  expect(obtenerUsuarios()[0]).toMatchObject({ descuento: 20, contrasena: 'Ficticia123!' })
+test('registro asigna rol cliente, conserva beneficio Duoc y no guarda confirmación', () => {
+  registrarUsuario({ ...formulario, rol: 'admin' })
+  expect(obtenerUsuarios()[0]).toMatchObject({ rol: 'cliente', descuento: 20, contrasena: 'Ficticia123!' })
   expect(obtenerUsuarios()[0]).not.toHaveProperty('confirmacion')
 })
 test('rechaza duplicados sin distinguir mayúsculas ni espacios', () => {
@@ -52,6 +52,8 @@ test('rechaza contraseña incorrecta y correo inexistente', () => {
   expect(iniciarSesion('nadie@example.com', formulario.contrasena)).toBeNull()
 })
 test('admin demostrativo recibe rol sin guardar contraseña', () => {
+  expect(registrarUsuario({ ...formulario, correo: ' ADMIN@TIENDA.CL ' })).toHaveProperty('error')
+  expect(obtenerUsuarios()).toHaveLength(0)
   expect(iniciarSesion('admin@tienda.cl', '123456').rol).toBe('admin')
   expect(leerSesion()).not.toHaveProperty('contrasena')
 })
