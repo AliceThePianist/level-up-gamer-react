@@ -23,16 +23,6 @@ function App() {
   const [usuarioSesion, setUsuarioSesion] = useState(leerSesion)
   const [errorSesion, setErrorSesion] = useState('')
 
-  function cerrarSesion() {
-    try {
-      eliminarSesion()
-      setUsuarioSesion(null)
-      setErrorSesion('')
-    } catch {
-      setErrorSesion('No se pudo cerrar la sesión. Revisa el almacenamiento del navegador e inténtalo nuevamente.')
-    }
-  }
-
   // Solo guardamos identificador y cantidad; los datos del producto tienen una única fuente.
   const [carrito, setCarrito] = useState([])
   const [avisoCarrito, setAvisoCarrito] = useState('')
@@ -55,6 +45,21 @@ function App() {
     }
   }, [pathname, hash])
 
+  function actualizarSesion(usuario) {
+    setUsuarioSesion(usuario)
+    setErrorSesion('')
+    setUltimaCompra(null)
+  }
+
+  function cerrarSesion() {
+    try {
+      eliminarSesion()
+      actualizarSesion(null)
+    } catch {
+      setErrorSesion('No se pudo cerrar la sesión. Revisa el almacenamiento del navegador e inténtalo nuevamente.')
+    }
+  }
+
   function agregarProducto(id) {
     const producto = productos.find((producto) => producto.id === id)
     if (!producto || producto.stock === 0) return
@@ -65,6 +70,13 @@ function App() {
         ? actual.map((item) => item.id === id ? { ...item, cantidad: item.cantidad + 1 } : item)
         : [...actual, { id, cantidad: 1 }]
     })
+    setUltimaCompra(null)
+  }
+
+  function disminuirProducto(id) {
+    setCarrito((actual) => actual.map((item) =>
+      item.id === id && item.cantidad > 1 ? { ...item, cantidad: item.cantidad - 1 } : item,
+    ))
   }
 
   function eliminarProducto(id) {
@@ -75,6 +87,7 @@ function App() {
     if (carrito.length === 0) return
     setUltimaCompra({ subtotal, descuento, total })
     setCarrito([])
+    setAvisoCarrito('')
   }
 
   function agregarProductoCatalogo(datos) {
@@ -113,12 +126,18 @@ function App() {
       {catalogo.error && <Container className="mt-3"><Alert variant="danger">{catalogo.error}</Alert></Container>}
       {avisoCarrito && <Container className="mt-3"><Alert variant="info" dismissible onClose={() => setAvisoCarrito('')}>{avisoCarrito}</Alert></Container>}
       <Routes>
-        <Route path="/login" element={<Login alIniciarSesion={setUsuarioSesion} />} />
+        <Route path="/login" element={<Login alIniciarSesion={actualizarSesion} />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/" element={<Home productos={productos} carrito={carrito} agregarProducto={agregarProducto} />} />
         <Route path="/productos" element={<Productos productos={productos} carrito={carrito} agregarProducto={agregarProducto} />} />
         <Route path="/producto/:id?" element={<DetalleProducto productos={productos} carrito={carrito} agregarProducto={agregarProducto} />} />
-        <Route path="/carrito" element={<Carrito productos={productos} carrito={carrito} subtotal={subtotal} descuento={descuento} total={total} ultimaCompra={ultimaCompra} eliminarProducto={eliminarProducto} comprar={comprar} />} />
+        <Route path="/carrito" element={
+          <Carrito
+            productos={productos} carrito={carrito} subtotal={subtotal} descuento={descuento}
+            total={total} ultimaCompra={ultimaCompra} aumentarProducto={agregarProducto}
+            disminuirProducto={disminuirProducto} eliminarProducto={eliminarProducto} comprar={comprar}
+          />
+        } />
         <Route path="/admin" element={<AdminLayout usuario={usuarioSesion} />}>
           <Route index element={<Navigate to="productos" replace />} />
           <Route path="productos" element={<AdminProductos productos={productos} eliminarProducto={eliminarProductoCatalogo} />} />

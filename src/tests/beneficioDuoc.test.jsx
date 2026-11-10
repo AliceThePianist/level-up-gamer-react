@@ -26,6 +26,8 @@ test.each(['alumno@duoc.cl', 'alumno@duocuc.cl'])('aplica 20%% a %s y conserva e
   expect(screen.getByText('$23.992 CLP')).toBeInTheDocument()
   expect(screen.getByText('Beneficio Duoc aplicado: $5.998 CLP')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Comprar', exact: true })).toBeDisabled()
+  await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
+  expect(screen.queryByText('¡Compra simulada realizada!')).not.toBeInTheDocument()
 })
 
 test.each([null, 'cliente@example.com', 'alumno@duoc.cl.example.com'])('no aplica descuento a %s', async correo => {

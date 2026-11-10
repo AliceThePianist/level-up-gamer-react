@@ -1,7 +1,7 @@
 import { Alert, Button, Card, Col, Container, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 
-function Carrito({ productos, carrito, subtotal, descuento, total, ultimaCompra, eliminarProducto, comprar }) {
+function Carrito({ productos, carrito, subtotal, descuento, total, ultimaCompra, aumentarProducto, disminuirProducto, eliminarProducto, comprar }) {
   return (
     <main id="contenido" tabIndex={-1} className="seccion fondo-suave">
       <Container>
@@ -28,7 +28,17 @@ function Carrito({ productos, carrito, subtotal, descuento, total, ultimaCompra,
                   <Card.Body>
                     <h2 className="h5">{producto.nombre}</h2>
                     <p>Precio unitario: ${producto.precio.toLocaleString('es-CL')} CLP</p>
-                    <p>Cantidad: {item.cantidad}</p>
+                    <div className="d-flex flex-wrap align-items-center gap-2 mb-3">
+                      <Button
+                        variant="outline-secondary" size="sm" disabled={item.cantidad <= 1}
+                        onClick={() => disminuirProducto(item.id)} aria-label={`Disminuir cantidad de ${producto.nombre}`}
+                      >−</Button>
+                      <p className="mb-0" aria-live="polite">Cantidad: {item.cantidad}</p>
+                      <Button
+                        variant="outline-secondary" size="sm" disabled={item.cantidad >= producto.stock}
+                        onClick={() => aumentarProducto(item.id)} aria-label={`Aumentar cantidad de ${producto.nombre}`}
+                      >+</Button>
+                    </div>
                     <p className="fw-bold">Subtotal: ${(producto.precio * item.cantidad).toLocaleString('es-CL')} CLP</p>
                     <Button variant="outline-danger" onClick={() => eliminarProducto(item.id)} aria-label={`Eliminar ${producto.nombre} del carrito`}>Eliminar</Button>
                   </Card.Body>

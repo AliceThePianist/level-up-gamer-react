@@ -10,19 +10,31 @@ function abrir(ruta = '/productos', admin = false) {
   return render(<MemoryRouter initialEntries={[ruta]}><App /></MemoryRouter>)
 }
 
-test('agrega dos unidades, conserva el carrito al navegar y calcula la compra', async () => {
+test('ajusta cantidades y separa el resumen de dos compras consecutivas', async () => {
   const user = userEvent.setup()
   abrir()
   await user.click(screen.getByRole('button', { name: 'Agregar Catan al carrito' }))
   await user.click(screen.getByRole('button', { name: 'Agregar Catan al carrito' }))
   await user.click(screen.getByRole('link', { name: 'Carrito (2)' }))
   expect(screen.getByText('Cantidad: 2')).toBeInTheDocument()
+  const disminuir = screen.getByRole('button', { name: 'Disminuir cantidad de Catan' })
+  await user.click(disminuir)
+  expect(disminuir).toBeDisabled()
+  expect(screen.getByText('Subtotal: $29.990 CLP')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Aumentar cantidad de Catan' }))
   expect(screen.getByText('Subtotal: $59.980 CLP')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Comprar', exact: true }))
   expect(screen.getByText('¡Compra simulada realizada!')).toBeInTheDocument()
   expect(screen.getByText('$59.980 CLP')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Comprar', exact: true })).toBeDisabled()
   expect(screen.getByRole('link', { name: 'Carrito (0)' })).toBeInTheDocument()
+  await user.click(screen.getByRole('link', { name: 'Seguir explorando productos' }))
+  await user.click(screen.getByRole('button', { name: 'Agregar Catan al carrito' }))
+  await user.click(screen.getByRole('link', { name: 'Carrito (1)' }))
+  expect(screen.queryByText('¡Compra simulada realizada!')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Comprar', exact: true }))
+  expect(screen.getByText('$29.990 CLP')).toBeInTheDocument()
+  expect(screen.queryByText('$59.980 CLP')).not.toBeInTheDocument()
 })
 
 test('carrito vacío impide comprar', () => {

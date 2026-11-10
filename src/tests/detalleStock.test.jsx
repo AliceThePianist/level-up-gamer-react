@@ -49,6 +49,10 @@ test('catálogo y detalle comparten límite de unidades disponibles', async () =
   await user.click(screen.getByRole('link', { name: 'Carrito (2)' }))
   expect(screen.getByText('Cantidad: 2')).toBeInTheDocument()
   expect(screen.getByText('Subtotal: $59.980 CLP')).toBeInTheDocument()
+  const aumentar = screen.getByRole('button', { name: 'Aumentar cantidad de Catan' })
+  expect(aumentar).toBeDisabled()
+  await user.click(screen.getByRole('button', { name: 'Disminuir cantidad de Catan' }))
+  expect(aumentar).toBeEnabled()
 })
 
 test('reducir stock ajusta el carrito y stock cero retira el producto', async () => {
