@@ -24,6 +24,7 @@ export function validarRegistro(formulario, hoy = new Date()) {
     errores.correo = 'Ingresa un correo válido, por ejemplo nombre@correo.cl.'
   }
   if (formulario.contrasena.trim().length < 6) errores.contrasena = 'Usa una contraseña de al menos 6 caracteres.'
+  if (new TextEncoder().encode(formulario.contrasena).length > 72) errores.contrasena = 'La contraseña no puede superar 72 bytes.'
   if (!formulario.confirmacion) {
     errores.confirmacion = 'Confirma tu contraseña.'
   } else if (formulario.contrasena !== formulario.confirmacion) {

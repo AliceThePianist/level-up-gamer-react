@@ -22,6 +22,7 @@ function Registro() {
   const [errores, setErrores] = useState({})
   const [mensaje, setMensaje] = useState('')
   const [errorGuardado, setErrorGuardado] = useState('')
+  const [enviando, setEnviando] = useState(false)
 
   function manejarCambio(event) {
     const { name, value } = event.target
@@ -31,25 +32,26 @@ function Registro() {
     setErrorGuardado('')
   }
 
-  function registrar(event) {
+  async function registrar(event) {
     event.preventDefault()
+    if (enviando) return
     setMensaje('')
     setErrorGuardado('')
     const nuevosErrores = validarRegistro(formulario)
     setErrores(nuevosErrores)
     if (Object.keys(nuevosErrores).length > 0) return
+    setEnviando(true)
     try {
-      const resultado = registrarUsuario(formulario)
-      if (resultado.error) {
-        setErrores({ correo: resultado.error })
-        return
-      }
-      setMensaje(resultado.usuario.descuento === 20
+      const usuario = await registrarUsuario(formulario)
+      setMensaje(usuario.descuento === 20
         ? 'Registro exitoso. Beneficio Duoc del 20% registrado. Inicia sesión para aplicarlo a tu compra.'
         : 'Registro exitoso. Ya puedes iniciar sesión.')
       setFormulario(formularioInicial)
-    } catch {
-      setErrorGuardado('No se pudo guardar el registro. El almacenamiento puede estar bloqueado o contener datos inválidos. No se modificaron los registros anteriores.')
+    } catch (error) {
+      if (error.status === 409) setErrores({ correo: 'Este correo ya está registrado.' })
+      else setErrorGuardado(error.message)
+    } finally {
+      setEnviando(false)
     }
   }
 
@@ -96,7 +98,7 @@ function Registro() {
                       Las cuentas con correo institucional Duoc reciben el beneficio
                       del 20% al iniciar sesión y realizar una compra.
                       </p>
-                      <Button type="submit" variant="success" className="w-100">Registrarme</Button>
+                      <Button type="submit" variant="success" className="w-100" disabled={enviando}>{enviando ? 'Registrando…' : 'Registrarme'}</Button>
                     </Col>
                   </Row>
                 </Form>

@@ -20,7 +20,6 @@ function AdminLayout({ usuario }) {
           </>
         ) : (
           <>
-            <Alert variant="info">Administración de demostración. El control de acceso es solo frontend; no representa seguridad real.</Alert>
             <Row className="g-4">
               <Col lg={3}><AdminSidebar /></Col>
               <Col lg={9}><Outlet /></Col>

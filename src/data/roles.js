@@ -1,2 +1,2 @@
-export const ROL_ADMINISTRADOR = 'admin'
-export const ROL_CLIENTE = 'cliente'
+export const ROL_ADMINISTRADOR = 'ADMINISTRADOR'
+export const ROL_CLIENTE = 'CLIENTE'

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, Container } from 'react-bootstrap'
+import { Alert, Button, Container } from 'react-bootstrap'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -8,9 +8,9 @@ import Productos from './views/Productos'
 import Carrito from './views/Carrito'
 import Registro from './views/Registro'
 import Login from './views/Login'
-import { leerSesion, eliminarSesion } from './data/sesion'
+import { leerSesion, eliminarSesion, eliminarUsuariosLocales } from './data/sesion'
 import { ROL_ADMINISTRADOR, ROL_CLIENTE } from './data/roles'
-import { cargarProductos, guardarProductos } from './data/productos'
+import { cargarProductos, crearProducto, actualizarProducto, borrarProducto } from './data/productos'
 import AdminLayout from './views/admin/AdminLayout'
 import AdminProductos from './views/admin/AdminProductos'
 import AdminAgregarProducto from './views/admin/AdminAgregarProducto'
@@ -18,8 +18,9 @@ import AdminEditarProducto from './views/admin/AdminEditarProducto'
 import DetalleProducto from './views/DetalleProducto'
 
 function App() {
-  const [catalogo, setCatalogo] = useState(cargarProductos)
-  const productos = catalogo.productos
+  const [productos, setProductos] = useState([])
+  const [catalogo, setCatalogo] = useState({ cargando: true, error: '' })
+  const [intento, setIntento] = useState(0)
   const [usuarioSesion, setUsuarioSesion] = useState(leerSesion)
   const [errorSesion, setErrorSesion] = useState('')
 
@@ -45,6 +46,42 @@ function App() {
     }
   }, [pathname, hash])
 
+  useEffect(() => {
+    eliminarUsuariosLocales()
+  }, [])
+
+  useEffect(() => {
+    const solicitud = new AbortController()
+    cargarProductos(solicitud.signal).then((datos) => {
+      if (solicitud.signal.aborted) return
+      setProductos(datos)
+      setCatalogo({ cargando: false, error: '' })
+    }).catch((error) => {
+      if (!solicitud.signal.aborted) setCatalogo({ cargando: false, error: error.message })
+    })
+    return () => solicitud.abort()
+  }, [intento])
+
+  useEffect(() => {
+    if (!usuarioSesion) return
+    const temporizador = window.setTimeout(() => {
+      try {
+        eliminarSesion()
+      } catch {
+        // La sesión en memoria expira aunque el navegador bloquee el almacenamiento.
+      }
+      setUsuarioSesion(null)
+      setUltimaCompra(null)
+      setErrorSesion('Tu sesión terminó. Vuelve a iniciar sesión.')
+    }, Math.max(0, usuarioSesion.expiraEn - Date.now()))
+    return () => window.clearTimeout(temporizador)
+  }, [usuarioSesion])
+
+  function reintentarCatalogo() {
+    setCatalogo({ cargando: true, error: '' })
+    setIntento((actual) => actual + 1)
+  }
+
   function actualizarSesion(usuario) {
     setUsuarioSesion(usuario)
     setErrorSesion('')
@@ -52,17 +89,18 @@ function App() {
   }
 
   function cerrarSesion() {
+    actualizarSesion(null)
     try {
       eliminarSesion()
-      actualizarSesion(null)
     } catch {
-      setErrorSesion('No se pudo cerrar la sesión. Revisa el almacenamiento del navegador e inténtalo nuevamente.')
+      setErrorSesion('La sesión se cerró, pero no se pudo limpiar el almacenamiento del navegador.')
     }
   }
 
-  function agregarProducto(id) {
-    const producto = productos.find((producto) => producto.id === id)
+  function agregarProducto(id, productoDetalle) {
+    const producto = productoDetalle || productos.find((producto) => producto.id === id)
     if (!producto || producto.stock === 0) return
+    if (productoDetalle) sincronizarProducto(productoDetalle)
     setCarrito((actual) => {
       if ((actual.find((item) => item.id === id)?.cantidad || 0) >= producto.stock) return actual
       const existe = actual.some((item) => item.id === id)
@@ -90,32 +128,49 @@ function App() {
     setAvisoCarrito('')
   }
 
-  function agregarProductoCatalogo(datos) {
-    if (usuarioSesion?.rol !== ROL_ADMINISTRADOR || catalogo.error) throw new Error('Acción no disponible')
-    // Supera los IDs actuales y los reservados de los cuatro productos iniciales.
-    const id = Math.max(Date.now(), ...productos.map((producto) => producto.id + 1), 5)
-    const nuevos = [...productos, { ...datos, id }]
-    guardarProductos(nuevos)
-    setCatalogo({ productos: nuevos, error: '' })
+  function guardarEnCatalogo(producto) {
+    setProductos((actual) => actual.some((item) => item.id === producto.id)
+      ? actual.map((item) => item.id === producto.id ? producto : item)
+      : [...actual, producto])
   }
 
-  function eliminarProductoCatalogo(id) {
-    if (usuarioSesion?.rol !== ROL_ADMINISTRADOR || catalogo.error) throw new Error('Acción no disponible')
-    const nuevos = productos.filter((producto) => producto.id !== id)
-    guardarProductos(nuevos)
-    setCatalogo({ productos: nuevos, error: '' })
+  function sincronizarProducto(producto) {
+    guardarEnCatalogo(producto)
+    if (carrito.some((item) => item.id === producto.id && item.cantidad > producto.stock)) {
+      setAvisoCarrito('Se ajustaron las cantidades del carrito al stock disponible.')
+    }
+    setCarrito((actual) => actual.map((item) =>
+      item.id === producto.id ? { ...item, cantidad: Math.min(item.cantidad, producto.stock) } : item,
+    ).filter((item) => item.cantidad > 0))
+  }
+
+  async function solicitarCambio(operacion) {
+    if (usuarioSesion?.rol !== ROL_ADMINISTRADOR) throw new Error('Tu cuenta no tiene permiso para realizar esta acción.')
+    try {
+      return await operacion(usuarioSesion.token)
+    } catch (error) {
+      if (error.status === 401 && leerSesion()?.token === usuarioSesion.token) {
+        cerrarSesion()
+        setErrorSesion(error.message)
+      }
+      throw error
+    }
+  }
+
+  async function agregarProductoCatalogo(datos) {
+    const producto = await solicitarCambio((token) => crearProducto(datos, token))
+    guardarEnCatalogo(producto)
+  }
+
+  async function eliminarProductoCatalogo(id) {
+    await solicitarCambio((token) => borrarProducto(id, token))
+    setProductos((actual) => actual.filter((producto) => producto.id !== id))
     setCarrito((actual) => actual.filter((item) => item.id !== id))
   }
 
-  function editarProductoCatalogo(id, datos) {
-    if (usuarioSesion?.rol !== ROL_ADMINISTRADOR || catalogo.error || !productos.some((producto) => producto.id === id)) throw new Error('Acción no disponible')
-    const nuevos = productos.map((producto) => producto.id === id ? { ...datos, id } : producto)
-    guardarProductos(nuevos)
-    setCatalogo({ productos: nuevos, error: '' })
-    if (carrito.some((item) => item.id === id && item.cantidad > datos.stock)) {
-      setCarrito((actual) => actual.map((item) => item.id === id ? { ...item, cantidad: Math.min(item.cantidad, datos.stock) } : item).filter((item) => item.cantidad > 0))
-      setAvisoCarrito('Se ajustaron las cantidades del carrito al stock disponible.')
-    }
+  async function editarProductoCatalogo(id, datos) {
+    const producto = await solicitarCambio((token) => actualizarProducto(id, datos, token))
+    sincronizarProducto(producto)
   }
 
   return (
@@ -123,14 +178,20 @@ function App() {
       <a className="saltar-contenido" href="#contenido">Saltar al contenido</a>
       <Navbar unidades={unidades} usuarioSesion={usuarioSesion} cerrarSesion={cerrarSesion} />
       {errorSesion && <Container className="mt-3"><Alert variant="danger">{errorSesion}</Alert></Container>}
-      {catalogo.error && <Container className="mt-3"><Alert variant="danger">{catalogo.error}</Alert></Container>}
+      {catalogo.cargando && <Container className="mt-3"><Alert variant="info" role="status">Cargando catálogo…</Alert></Container>}
+      {catalogo.error && <Container className="mt-3">
+        <Alert variant="danger">
+          No se pudo cargar el catálogo. {catalogo.error}{' '}
+          <Button size="sm" variant="outline-danger" onClick={reintentarCatalogo}>Reintentar</Button>
+        </Alert>
+      </Container>}
       {avisoCarrito && <Container className="mt-3"><Alert variant="info" dismissible onClose={() => setAvisoCarrito('')}>{avisoCarrito}</Alert></Container>}
       <Routes>
         <Route path="/login" element={<Login alIniciarSesion={actualizarSesion} />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/" element={<Home productos={productos} carrito={carrito} agregarProducto={agregarProducto} />} />
-        <Route path="/productos" element={<Productos productos={productos} carrito={carrito} agregarProducto={agregarProducto} />} />
-        <Route path="/producto/:id?" element={<DetalleProducto productos={productos} carrito={carrito} agregarProducto={agregarProducto} />} />
+        <Route path="/productos" element={<Productos productos={productos} carrito={carrito} agregarProducto={agregarProducto} disponible={!catalogo.cargando && !catalogo.error} />} />
+        <Route path="/producto/:id?" element={<DetalleProducto carrito={carrito} agregarProducto={agregarProducto} />} />
         <Route path="/carrito" element={
           <Carrito
             productos={productos} carrito={carrito} subtotal={subtotal} descuento={descuento}
@@ -140,9 +201,9 @@ function App() {
         } />
         <Route path="/admin" element={<AdminLayout usuario={usuarioSesion} />}>
           <Route index element={<Navigate to="productos" replace />} />
-          <Route path="productos" element={<AdminProductos productos={productos} eliminarProducto={eliminarProductoCatalogo} />} />
+          <Route path="productos" element={<AdminProductos productos={productos} eliminarProducto={eliminarProductoCatalogo} disponible={!catalogo.cargando && !catalogo.error} />} />
           <Route path="productos/nuevo" element={<AdminAgregarProducto agregarProducto={agregarProductoCatalogo} />} />
-          <Route path="productos/:id/editar" element={<AdminEditarProducto productos={productos} editarProducto={editarProductoCatalogo} />} />
+          <Route path="productos/:id/editar" element={<AdminEditarProducto editarProducto={editarProductoCatalogo} />} />
         </Route>
       </Routes>
       <Footer />

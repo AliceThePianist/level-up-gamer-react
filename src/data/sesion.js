@@ -1,45 +1,49 @@
-import { ROL_ADMINISTRADOR, ROL_CLIENTE } from './roles.js'
-import { CORREO_ADMIN_DEMO, obtenerUsuarios } from './usuarios.js'
+import { solicitar } from './api'
+import { ROL_ADMINISTRADOR, ROL_CLIENTE } from './roles'
 
-// Lista explícita de datos de sesión: nunca copiar el usuario completo con su contraseña.
-function perfilDeSesion(usuario) {
-  return {
-    id: usuario.id,
-    nombre: usuario.nombre,
-    correo: usuario.correo,
-    descuento: usuario.descuento,
-    rol: usuario.rol === ROL_ADMINISTRADOR ? ROL_ADMINISTRADOR : ROL_CLIENTE,
-  }
+const claveSesion = 'usuarioSesion'
+
+function perfilDeSesion({ id, nombre, rol, descuento, token, expiraEn }) {
+  return { id, nombre, rol, descuento, token, expiraEn }
 }
 
-export function iniciarSesion(correo, contrasena) {
-  const correoNormalizado = correo.trim().toLowerCase()
-  // Credenciales públicas del ejemplo académico del profesor, sin seguridad real.
-  if (correoNormalizado === CORREO_ADMIN_DEMO && contrasena === '123456') {
-    const administrador = { id: 'admin-demo', nombre: 'Administrador', correo: CORREO_ADMIN_DEMO, descuento: 0, rol: ROL_ADMINISTRADOR }
-    sessionStorage.setItem('usuarioSesion', JSON.stringify(administrador))
-    return administrador
-  }
-  const usuario = obtenerUsuarios().find((usuario) =>
-    usuario.correo.trim().toLowerCase() === correoNormalizado &&
-    typeof usuario.contrasena === 'string' && usuario.contrasena === contrasena,
-  )
-  if (!usuario) return null
-  const perfil = perfilDeSesion({ ...usuario, rol: ROL_CLIENTE })
-  sessionStorage.setItem('usuarioSesion', JSON.stringify(perfil))
-  return perfil
+export async function iniciarSesion(correo, contrasena) {
+  const respuesta = await solicitar('/api/auth/login', {
+    metodo: 'POST', datos: { correo: correo.trim().toLowerCase(), contrasena },
+  })
+  const sesion = perfilDeSesion({
+    ...respuesta.usuario,
+    token: respuesta.token,
+    expiraEn: Date.now() + respuesta.expiraEn * 1000,
+  })
+  sessionStorage.setItem(claveSesion, JSON.stringify(sesion))
+  return sesion
 }
 
 export function leerSesion() {
   try {
-    const usuario = JSON.parse(sessionStorage.getItem('usuarioSesion') || 'null')
-    if (!usuario || typeof usuario.nombre !== 'string' || typeof usuario.correo !== 'string') return null
-    return perfilDeSesion(usuario)
+    const sesion = JSON.parse(sessionStorage.getItem(claveSesion) || 'null')
+    if (!sesion) return null
+    if (!sesion.token || typeof sesion.nombre !== 'string' ||
+        ![ROL_ADMINISTRADOR, ROL_CLIENTE].includes(sesion.rol) ||
+        !Number.isFinite(sesion.expiraEn) || sesion.expiraEn <= Date.now()) {
+      eliminarSesion()
+      return null
+    }
+    return perfilDeSesion(sesion)
   } catch {
     return null
   }
 }
 
 export function eliminarSesion() {
-  sessionStorage.removeItem('usuarioSesion')
+  sessionStorage.removeItem(claveSesion)
+}
+
+export function eliminarUsuariosLocales() {
+  try {
+    localStorage.removeItem('levelup-usuarios-demo')
+  } catch {
+    // La API de autenticación funciona aunque el almacenamiento local esté bloqueado.
+  }
 }

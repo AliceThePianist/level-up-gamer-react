@@ -9,10 +9,12 @@ function Login({ alIniciarSesion }) {
   const [contrasena, setContrasena] = useState('')
   const [errores, setErrores] = useState({})
   const [error, setError] = useState('')
+  const [enviando, setEnviando] = useState(false)
   const navigate = useNavigate()
 
-  function ingresar(event) {
+  async function ingresar(event) {
     event.preventDefault()
+    if (enviando) return
     setError('')
     const nuevosErrores = {}
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) {
@@ -21,18 +23,20 @@ function Login({ alIniciarSesion }) {
     if (contrasena.trim().length < 6) {
       nuevosErrores.contrasena = 'Ingresa tu contraseña de al menos 6 caracteres.'
     }
+    if (new TextEncoder().encode(contrasena).length > 72) {
+      nuevosErrores.contrasena = 'La contraseña no puede superar 72 bytes.'
+    }
     setErrores(nuevosErrores)
     if (Object.keys(nuevosErrores).length > 0) return
+    setEnviando(true)
     try {
-      const usuario = iniciarSesion(correo, contrasena)
-      if (!usuario) {
-        setError('Correo o contraseña incorrectos.')
-        return
-      }
+      const usuario = await iniciarSesion(correo, contrasena)
       alIniciarSesion(usuario)
       navigate(usuario.rol === ROL_ADMINISTRADOR ? '/admin/productos' : '/')
-    } catch {
-      setError('No se pudo iniciar sesión. Revisa que el almacenamiento del navegador esté disponible y que los datos guardados sean válidos.')
+    } catch (error) {
+      setError(error.status === 401 ? 'Correo o contraseña incorrectos.' : error.message)
+    } finally {
+      setEnviando(false)
     }
   }
 
@@ -45,20 +49,20 @@ function Login({ alIniciarSesion }) {
               <Card.Body className="p-4">
                 <p className="etiqueta">BIENVENIDO A LEVEL-UP GAMER</p>
                 <h1>Iniciar sesión</h1>
-                <p className="text-secondary small">Sitio educativo. No reutilices contraseñas personales: los datos se almacenan en este navegador.</p>
+                <p className="text-secondary small">Sitio educativo. Usa una contraseña exclusiva para esta tienda.</p>
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form noValidate onSubmit={ingresar}>
                   <Form.Group controlId="login-correo" className="mb-3">
                     <Form.Label>Correo electrónico</Form.Label>
-                    <Form.Control type="email" value={correo} onChange={(event) => { setCorreo(event.target.value); setError('') }} isInvalid={!!errores.correo} aria-describedby="error-correo" autoComplete="off" required />
+                    <Form.Control type="email" value={correo} onChange={(event) => { setCorreo(event.target.value); setError('') }} isInvalid={!!errores.correo} aria-describedby="error-correo" autoComplete="username" required />
                     <Form.Control.Feedback type="invalid" id="error-correo">{errores.correo}</Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group controlId="login-contrasena" className="mb-3">
                     <Form.Label>Contraseña</Form.Label>
-                    <Form.Control type="password" value={contrasena} onChange={(event) => { setContrasena(event.target.value); setError('') }} isInvalid={!!errores.contrasena} aria-describedby="error-contrasena" autoComplete="off" required />
+                    <Form.Control type="password" value={contrasena} onChange={(event) => { setContrasena(event.target.value); setError('') }} isInvalid={!!errores.contrasena} aria-describedby="error-contrasena" autoComplete="current-password" required />
                     <Form.Control.Feedback type="invalid" id="error-contrasena">{errores.contrasena}</Form.Control.Feedback>
                   </Form.Group>
-                  <Button type="submit" variant="success" className="w-100">Ingresar</Button>
+                  <Button type="submit" variant="success" className="w-100" disabled={enviando}>{enviando ? 'Ingresando…' : 'Ingresar'}</Button>
                 </Form>
                 <p className="mt-3 mb-0">¿Aún no tienes una cuenta? <Link to="/registro">Registrarte</Link></p>
               </Card.Body>

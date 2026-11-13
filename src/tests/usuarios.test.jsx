@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, test, vi } from 'vitest'
 import App from '../App'
+import { iniciarSesion } from '../data/sesion'
+import { claveAdministrador, correoAdministrador } from './apiSimulada'
 
 test('registro completo permite iniciar sesión y conserva el perfil tras recargar', async () => {
   const user = userEvent.setup()
@@ -12,16 +14,16 @@ test('registro completo permite iniciar sesión y conserva el perfil tras recarg
   }
   fireEvent.change(screen.getByLabelText('Fecha de nacimiento'), { target: { value: '2000-01-01' } })
   await user.click(screen.getByRole('button', { name: 'Registrarme' }))
-  expect(screen.getByText(/Registro exitoso. Beneficio Duoc/)).toBeInTheDocument()
+  expect(await screen.findByText(/Registro exitoso. Beneficio Duoc/)).toBeInTheDocument()
   await user.click(screen.getByRole('link', { name: 'Iniciar sesión', exact: true }))
   await user.type(screen.getByLabelText('Correo electrónico'), 'alumno@duoc.cl')
   await user.type(screen.getByLabelText('Contraseña'), 'Ficticia123!')
   await user.click(screen.getByRole('button', { name: 'Ingresar' }))
-  expect(screen.getByText('Hola, Alumno')).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: /Desafía tus límites/ })).toBeInTheDocument()
+  expect(await screen.findByText('Hola, Alumno')).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: /Desafía tus límites/ })).toBeInTheDocument()
   vista.unmount()
   render(<MemoryRouter><App /></MemoryRouter>)
-  expect(screen.getByText('Hola, Alumno')).toBeInTheDocument()
+  expect(await screen.findByText('Hola, Alumno')).toBeInTheDocument()
   expect(JSON.parse(sessionStorage.getItem('usuarioSesion'))).not.toHaveProperty('contrasena')
 }, 15000)
 
@@ -34,17 +36,17 @@ test('login muestra errores de campos y credenciales sin crear sesión', async (
   await user.type(screen.getByLabelText('Correo electrónico'), 'nadie@example.com')
   await user.type(screen.getByLabelText('Contraseña'), 'Incorrecta123')
   await user.click(screen.getByRole('button', { name: 'Ingresar' }))
-  expect(screen.getByText('Correo o contraseña incorrectos.')).toBeInTheDocument()
+  expect(await screen.findByText('Correo o contraseña incorrectos.')).toBeInTheDocument()
   expect(sessionStorage.getItem('usuarioSesion')).toBeNull()
 })
 
-test('fallo de almacenamiento durante eliminación conserva catálogo y muestra error', async () => {
+test('fallo de la API durante eliminación conserva catálogo y muestra error', async () => {
   const user = userEvent.setup()
-  sessionStorage.setItem('usuarioSesion', JSON.stringify({ nombre: 'Administrador', correo: 'admin@tienda.cl', rol: 'admin' }))
+  await iniciarSesion(correoAdministrador, claveAdministrador)
   render(<MemoryRouter initialEntries={['/admin/productos']}><App /></MemoryRouter>)
-  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Almacenamiento bloqueado') })
-  await user.click(screen.getByRole('button', { name: 'Eliminar Catan', exact: true }))
+  await user.click(await screen.findByRole('button', { name: 'Eliminar Catan', exact: true }))
+  vi.mocked(fetch).mockRejectedValueOnce(new TypeError('Sin conexión'))
   await user.click(screen.getByRole('button', { name: 'Confirmar eliminación' }))
-  expect(screen.getByText(/No se pudo eliminar el producto/)).toBeInTheDocument()
+  expect(await screen.findByText(/No se pudo conectar con el servidor/)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Eliminar Catan', exact: true })).toBeInTheDocument()
 })

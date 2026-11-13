@@ -18,24 +18,29 @@ function FormularioProducto({ productoInicial = inicial, guardarProducto, editan
   const [errores, setErrores] = useState({})
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
+  const [enviando, setEnviando] = useState(false)
 
-  function guardar(event) {
+  async function guardar(event) {
     event.preventDefault()
+    if (enviando) return
     setMensaje('')
     setError('')
     const nuevosErrores = validarProducto(producto, productoInicial.imagen)
     setErrores(nuevosErrores)
     if (Object.keys(nuevosErrores).length > 0) return
+    setEnviando(true)
     try {
-      guardarProducto({
+      await guardarProducto({
         nombre: producto.nombre.trim(), categoria: producto.categoria.trim(),
         descripcion: producto.descripcion.trim(), imagen: producto.imagen.trim(),
         precio: Number(producto.precio), stock: Number(producto.stock),
       })
       if (!editando) setProducto(inicial)
       setMensaje(editando ? 'Producto actualizado correctamente.' : 'Producto agregado correctamente. Ya está disponible en el catálogo.')
-    } catch {
-      setError('No se pudo guardar el producto. Revisa el almacenamiento del navegador.')
+    } catch (error) {
+      setError(error.message)
+    } finally {
+      setEnviando(false)
     }
   }
 
@@ -57,7 +62,7 @@ function FormularioProducto({ productoInicial = inicial, guardarProducto, editan
             <Form.Control.Feedback type="invalid" id={`error-${campo.nombre}`}>{errores[campo.nombre]}</Form.Control.Feedback>
           </Form.Group>
         ))}
-        <Button type="submit" variant="success">Guardar producto</Button>
+        <Button type="submit" variant="success" disabled={enviando}>{enviando ? 'Guardando…' : 'Guardar producto'}</Button>
       </Form>
       <Link to="/admin/productos" className="d-inline-block mt-3">Volver al listado</Link>
     </>

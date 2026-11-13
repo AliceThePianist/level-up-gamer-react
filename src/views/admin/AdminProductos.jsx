@@ -2,22 +2,27 @@ import { useState } from 'react'
 import { Alert, Button, Modal, Table } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 
-function AdminProductos({ productos, eliminarProducto }) {
+function AdminProductos({ productos, eliminarProducto, disponible }) {
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
   const [seleccionado, setSeleccionado] = useState(null)
 
-  function eliminar() {
-    if (!seleccionado) return
+  const [eliminando, setEliminando] = useState(false)
+
+  async function eliminar() {
+    if (!seleccionado || eliminando) return
     setMensaje('')
     setError('')
+    setEliminando(true)
     try {
-      eliminarProducto(seleccionado.id)
+      await eliminarProducto(seleccionado.id)
       setMensaje(`Se eliminó ${seleccionado.nombre} del catálogo y del carrito.`)
       setSeleccionado(null)
-    } catch {
+    } catch (error) {
       setSeleccionado(null)
-      setError('No se pudo eliminar el producto. Revisa el almacenamiento del navegador.')
+      setError(error.message)
+    } finally {
+      setEliminando(false)
     }
   }
 
@@ -27,7 +32,8 @@ function AdminProductos({ productos, eliminarProducto }) {
       <Button as={Link} to="/admin/productos/nuevo" variant="success" className="mb-3">Nuevo producto</Button>
       {mensaje && <Alert variant="success" role="status">{mensaje}</Alert>}
       {error && <Alert variant="danger">{error}</Alert>}
-      {productos.length === 0 ? <Alert variant="info">No hay productos en el catálogo.</Alert> : (
+      {disponible && productos.length === 0 && <Alert variant="info">No hay productos en el catálogo.</Alert>}
+      {productos.length > 0 && (
         <Table responsive bordered hover className="align-middle">
           <thead><tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio CLP</th><th>Stock</th><th>Acciones</th></tr></thead>
           <tbody>
@@ -44,12 +50,12 @@ function AdminProductos({ productos, eliminarProducto }) {
           </tbody>
         </Table>
       )}
-      <Modal show={seleccionado !== null} onHide={() => setSeleccionado(null)} centered aria-labelledby="titulo-eliminar">
-        <Modal.Header closeButton><Modal.Title id="titulo-eliminar">Confirmar eliminación</Modal.Title></Modal.Header>
+      <Modal show={seleccionado !== null} onHide={() => { if (!eliminando) setSeleccionado(null) }} centered aria-labelledby="titulo-eliminar">
+        <Modal.Header closeButton={!eliminando}><Modal.Title id="titulo-eliminar">Confirmar eliminación</Modal.Title></Modal.Header>
         <Modal.Body>¿Eliminar {seleccionado?.nombre}? También se retirará del carrito si está agregado.</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setSeleccionado(null)}>Cancelar</Button>
-          <Button variant="danger" onClick={eliminar}>Confirmar eliminación</Button>
+          <Button variant="secondary" disabled={eliminando} onClick={() => setSeleccionado(null)}>Cancelar</Button>
+          <Button variant="danger" disabled={eliminando} onClick={eliminar}>{eliminando ? 'Eliminando…' : 'Confirmar eliminación'}</Button>
         </Modal.Footer>
       </Modal>
     </>
