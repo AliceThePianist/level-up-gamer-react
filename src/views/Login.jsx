@@ -49,7 +49,6 @@ function Login({ alIniciarSesion }) {
               <Card.Body className="p-4">
                 <p className="etiqueta">BIENVENIDO A LEVEL-UP GAMER</p>
                 <h1>Iniciar sesión</h1>
-                <p className="text-secondary small">Sitio educativo. Usa una contraseña exclusiva para esta tienda.</p>
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form noValidate onSubmit={ingresar}>
                   <Form.Group controlId="login-correo" className="mb-3">

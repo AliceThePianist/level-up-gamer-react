@@ -16,7 +16,7 @@ function AdminProductos({ productos, eliminarProducto, disponible }) {
     setEliminando(true)
     try {
       await eliminarProducto(seleccionado.id)
-      setMensaje(`Se eliminó ${seleccionado.nombre} del catálogo y del carrito.`)
+      setMensaje(`${seleccionado.nombre} se eliminó del catálogo.`)
       setSeleccionado(null)
     } catch (error) {
       setSeleccionado(null)

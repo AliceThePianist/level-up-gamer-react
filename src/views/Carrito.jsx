@@ -7,13 +7,12 @@ function Carrito({ productos, carrito, subtotal, descuento, total, ultimaCompra,
       <Container>
         <p className="etiqueta">TU PRÓXIMA PARTIDA</p>
         <h1>Carrito de compras</h1>
-        <p className="text-secondary">Compra simulada: no se realizan pagos ni envíos reales.</p>
         {ultimaCompra !== null && (
           <Alert variant="success" role="status">
-            <Alert.Heading>¡Compra simulada realizada!</Alert.Heading>
-            <p>Subtotal de la última compra: ${ultimaCompra.subtotal.toLocaleString('es-CL')} CLP</p>
+            <Alert.Heading>Resumen guardado</Alert.Heading>
+            <p>Subtotal registrado: ${ultimaCompra.subtotal.toLocaleString('es-CL')} CLP</p>
             {ultimaCompra.descuento > 0 && <p>Beneficio Duoc aplicado: ${ultimaCompra.descuento.toLocaleString('es-CL')} CLP</p>}
-            <p className="mb-0">Total de la última compra: <strong>${ultimaCompra.total.toLocaleString('es-CL')} CLP</strong>.</p>
+            <p className="mb-0">Total registrado: <strong>${ultimaCompra.total.toLocaleString('es-CL')} CLP</strong>.</p>
           </Alert>
         )}
         <Row className="g-4">
@@ -54,7 +53,8 @@ function Carrito({ productos, carrito, subtotal, descuento, total, ultimaCompra,
                 <p>Subtotal de compra: ${subtotal.toLocaleString('es-CL')} CLP</p>
                 <p>{descuento > 0 ? 'Descuento Duoc (20%)' : 'Descuento'}: ${descuento.toLocaleString('es-CL')} CLP</p>
                 <p className="precio">Total: ${total.toLocaleString('es-CL')} <span>CLP</span></p>
-                <Button className="w-100" variant="success" onClick={comprar} disabled={carrito.length === 0}>Comprar</Button>
+                <Button className="w-100" variant="success" onClick={comprar} disabled={carrito.length === 0}>Guardar resumen</Button>
+                <p className="small text-secondary mt-2 mb-0">Guarda el total y vacía el carrito. Esta acción no realiza un cobro ni genera un pedido.</p>
               </Card.Body>
             </Card>
           </Col>

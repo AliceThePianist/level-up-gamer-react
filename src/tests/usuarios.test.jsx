@@ -14,7 +14,7 @@ test('registro completo permite iniciar sesión y conserva el perfil tras recarg
   }
   fireEvent.change(screen.getByLabelText('Fecha de nacimiento'), { target: { value: '2000-01-01' } })
   await user.click(screen.getByRole('button', { name: 'Registrarme' }))
-  expect(await screen.findByText(/Registro exitoso. Beneficio Duoc/)).toBeInTheDocument()
+  expect(await screen.findByText(/Tu cuenta está lista.*20% de descuento Duoc/)).toBeInTheDocument()
   await user.click(screen.getByRole('link', { name: 'Iniciar sesión', exact: true }))
   await user.type(screen.getByLabelText('Correo electrónico'), 'alumno@duoc.cl')
   await user.type(screen.getByLabelText('Contraseña'), 'Ficticia123!')

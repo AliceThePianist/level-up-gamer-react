@@ -72,7 +72,7 @@ function Home({ productos, carrito, agregarProducto }) {
         <Container>
           <p className="etiqueta">LO MÁS BUSCADO</p>
           <h2 id="titulo-destacados">Productos destacados</h2>
-          <p className="text-secondary mb-4">Una selección para conocer Level-Up Gamer. Agrega tus favoritos y simula tu compra.</p>
+          <p className="text-secondary mb-4">Juegos, consolas y accesorios destacados del catálogo.</p>
           <Row className="g-4">
             {productos.slice(0, 4).map((producto) => (
               <Col key={producto.id} sm={6} lg={3}>

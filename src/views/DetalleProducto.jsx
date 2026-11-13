@@ -12,7 +12,7 @@ function DetalleProducto({ carrito, agregarProducto }) {
         <Link to="/productos" className="d-inline-block mb-3">Volver al catálogo</Link>
         {cargando && <Alert variant="info" role="status">Cargando producto…</Alert>}
         {error && <Alert variant="danger">{error}</Alert>}
-        {noEncontrado && <Alert variant="warning"><h1 className="h4">Producto no encontrado</h1>El producto solicitado no está disponible en el catálogo.</Alert>}
+        {noEncontrado && <Alert variant="warning"><h1 className="h4">Producto no encontrado</h1>Este producto ya no está disponible o el enlace es incorrecto.</Alert>}
         {producto && (
           <Row className="justify-content-center">
             <Col md={8} lg={6}>

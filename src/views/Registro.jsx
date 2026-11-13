@@ -44,8 +44,8 @@ function Registro() {
     try {
       const usuario = await registrarUsuario(formulario)
       setMensaje(usuario.descuento === 20
-        ? 'Registro exitoso. Beneficio Duoc del 20% registrado. Inicia sesión para aplicarlo a tu compra.'
-        : 'Registro exitoso. Ya puedes iniciar sesión.')
+        ? 'Tu cuenta está lista. Inicia sesión para aplicar el 20% de descuento Duoc en el carrito.'
+        : 'Tu cuenta está lista. Ya puedes iniciar sesión.')
       setFormulario(formularioInicial)
     } catch (error) {
       if (error.status === 409) setErrores({ correo: 'Este correo ya está registrado.' })
@@ -65,10 +65,6 @@ function Registro() {
                 <p className="etiqueta">COMUNIDAD LEVEL-UP GAMER</p>
                 <h1>Registro de usuarios</h1>
                 <p>Completa todos los campos. Debes tener al menos 18 años.</p>
-                <p className="text-secondary small">
-                Este es un sitio educativo sin pagos reales.
-                No utilices datos personales reales ni reutilices contraseñas.
-                </p>
                 {mensaje && <Alert variant="success" role="status">{mensaje}</Alert>}
                 {errorGuardado && <Alert variant="danger">{errorGuardado}</Alert>}
                 {Object.values(errores).some(Boolean) && <Alert variant="danger">Revisa los campos indicados antes de continuar.</Alert>}

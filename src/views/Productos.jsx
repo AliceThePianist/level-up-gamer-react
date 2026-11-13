@@ -17,7 +17,7 @@ function Productos({ productos, carrito, agregarProducto, disponible }) {
       <Container>
         <p className="etiqueta">TU SIGUIENTE NIVEL COMIENZA AQUÍ</p>
         <h1>Catálogo de productos</h1>
-        <p className="text-secondary">Conoce nuestra selección de juegos, accesorios y equipos gamers. Agrega tus favoritos y simula tu compra.</p>
+        <p className="text-secondary">Encuentra juegos, accesorios y equipos para tu próxima partida.</p>
         <Row className="g-3 mb-4">
           <Col sm={7}>
             <Form.Group controlId="buscar-producto">
