@@ -1,8 +1,3 @@
-import catan from '../assets/images/catan.jpg'
-import control from '../assets/images/controlador-xbox.jpg'
-import consola from '../assets/images/playstation-5.jpg'
-import computador from '../assets/images/computador-gamer.jpg'
-
 // Datos iniciales de la portada anterior. Los precios se almacenan como números en CLP.
 export const productosIniciales = [
   {
@@ -11,7 +6,7 @@ export const productosIniciales = [
     categoria: 'Juegos de Mesa',
     stock: 10, // Existencias ficticias para la demostración académica.
     precio: 29990,
-    imagen: catan,
+    imagen: '/catalogo/catan.jpg',
     descripcion: 'Juego de estrategia ideal para compartir con amigos.',
   },
   {
@@ -20,7 +15,7 @@ export const productosIniciales = [
     categoria: 'Accesorios',
     stock: 10, // Existencias ficticias para la demostración académica.
     precio: 59990,
-    imagen: control,
+    imagen: '/catalogo/controlador-xbox.jpg',
     descripcion: 'Control inalámbrico compatible con consolas Xbox y computadores.',
   },
   {
@@ -29,7 +24,7 @@ export const productosIniciales = [
     categoria: 'Consolas',
     stock: 10, // Existencias ficticias para la demostración académica.
     precio: 549990,
-    imagen: consola,
+    imagen: '/catalogo/playstation-5.jpg',
     descripcion: 'Consola de última generación con gráficos de alta calidad.',
   },
   {
@@ -38,7 +33,7 @@ export const productosIniciales = [
     categoria: 'Computadores Gamers',
     stock: 10, // Existencias ficticias para la demostración académica.
     precio: 1299990,
-    imagen: computador,
+    imagen: '/catalogo/computador-gamer.jpg',
     descripcion: 'Equipo de alto rendimiento para los jugadores más exigentes.',
   },
 ]

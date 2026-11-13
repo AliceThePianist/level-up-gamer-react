@@ -12,7 +12,7 @@ export function validarProducto(producto, imagenActual = '') {
   try {
     // Al editar se permite conservar el recurso local original servido por Vite.
     const imagen = producto.imagen.trim()
-    if (imagen && imagen === imagenActual && (imagen.startsWith('/src/assets/') || imagen.startsWith('/assets/'))) return errores
+    if (imagen && imagen === imagenActual && ['/catalogo/', '/src/assets/', '/assets/'].some((ruta) => imagen.startsWith(ruta))) return errores
     const url = new URL(imagen)
     if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Protocolo inválido')
   } catch {
