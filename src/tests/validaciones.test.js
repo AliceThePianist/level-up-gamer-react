@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { validarRegistro } from '../utils/validarRegistro'
-import { validarProducto } from '../utils/validarProducto'
+import { validarImagen, validarProducto } from '../utils/validarProducto'
 import { registrarUsuario } from '../data/usuarios'
 import { iniciarSesion, leerSesion, eliminarSesion } from '../data/sesion'
 import { cargarProductos } from '../data/productos'
@@ -70,8 +70,10 @@ test.each(['', '-1', '0', 'Infinity', 'abc'])('rechaza precio %s', precio => {
 test.each(['', '-1', '1.5', 'Infinity', 'abc'])('rechaza stock %s', stock => {
   expect(validarProducto({ ...producto, stock })).toHaveProperty('stock')
 })
-test('rechaza URL de imagen ejecutable', () => {
-  expect(validarProducto({ ...producto, imagen: 'javascript:alert(1)' })).toHaveProperty('imagen')
+test('valida formato y tamaño de los archivos antes de enviarlos', () => {
+  expect(validarImagen(new File(['imagen'], 'control.png', { type: 'image/png' }))).toBe('')
+  expect(validarImagen(new File(['imagen'], 'control.svg', { type: 'image/svg+xml' }))).toMatch(/JPG, PNG o WebP/)
+  expect(validarImagen({ name: 'control.webp', type: 'image/webp', size: 5 * 1024 * 1024 + 1 })).toMatch(/5 MB/)
 })
 test('catálogo vacío de la API no restaura productos locales', async () => {
   productosApi.length = 0

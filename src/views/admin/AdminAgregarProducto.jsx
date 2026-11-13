@@ -1,5 +1,5 @@
 import FormularioProducto from '../../components/FormularioProducto'
 
-export default function AdminAgregarProducto({ agregarProducto }) {
-  return <FormularioProducto guardarProducto={agregarProducto} />
+export default function AdminAgregarProducto({ agregarProducto, subirImagen }) {
+  return <FormularioProducto guardarProducto={agregarProducto} subirImagen={subirImagen} />
 }

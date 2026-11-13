@@ -22,7 +22,13 @@ export function simularApi() {
   vi.stubGlobal('fetch', vi.fn(async (url, { method, body, headers, signal }) => {
     signal?.throwIfAborted()
     const { pathname } = new URL(url)
-    const datos = body ? JSON.parse(body) : undefined
+    const datos = typeof body === 'string' ? JSON.parse(body) : undefined
+
+    if (pathname === '/api/imagenes') {
+      if (tokens.get(headers.Authorization) !== ROL_ADMINISTRADOR) return respuesta(403)
+      if (method !== 'POST' || headers['Content-Type'] || !body.get('archivo')) return respuesta(400)
+      return respuesta(201, { imagen: '/api/imagenes/12345678-1234-1234-1234-123456789abc.png' })
+    }
 
     if (pathname === '/api/auth/registro') {
       if (usuarios.has(datos.correo)) return respuesta(409)

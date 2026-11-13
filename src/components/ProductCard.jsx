@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button, Card } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
+import { urlImagen } from '../data/api'
 
 function ProductCard({ producto, agregarProducto, cantidad = 0, mostrarEnlace = true, mostrarDescripcion = true, tituloAs = 'h2' }) {
   const [agregado, setAgregado] = useState(false)
@@ -12,7 +13,7 @@ function ProductCard({ producto, agregarProducto, cantidad = 0, mostrarEnlace = 
   }
   return (
     <Card as="article" className="tarjeta-producto h-100">
-      <Card.Img variant="top" src={producto.imagen} alt={producto.nombre} loading="lazy" />
+      <Card.Img variant="top" src={urlImagen(producto.imagen)} alt={producto.nombre} loading="lazy" />
       <Card.Body className="d-flex flex-column">
         <p className="etiqueta small">{producto.categoria}</p>
         <Card.Title as={tituloAs} className="h5 mb-4">{producto.nombre}</Card.Title>

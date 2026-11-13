@@ -57,21 +57,23 @@ test('edita sin duplicar y actualiza el precio del carrito y la persistencia', a
   await user.click(screen.getByRole('link', { name: 'Administración', exact: true }))
   await user.click(screen.getByRole('button', { name: 'Editar Catan', exact: true }))
   expect(await screen.findByLabelText('Nombre', { exact: true })).toHaveValue('Catan')
-  for (const [campo, valor] of Object.entries({ Nombre: 'Catan actualizado', Categoría: 'Mesa', 'Precio CLP': '45000', Descripción: 'Descripción nueva del juego', 'URL de la imagen': 'https://example.com/nueva.png', Stock: '4' })) {
+  for (const [campo, valor] of Object.entries({ Nombre: 'Catan actualizado', Categoría: 'Mesa', 'Precio CLP': '45000', Descripción: 'Descripción nueva del juego', Stock: '4' })) {
     await user.clear(screen.getByLabelText(campo, { exact: true }))
     await user.type(screen.getByLabelText(campo, { exact: true }), valor)
   }
+  await user.upload(screen.getByLabelText('Imagen del producto'), new File(['imagen'], 'nueva.png', { type: 'image/png' }))
+  expect(await screen.findByRole('img', { name: 'Vista previa de la imagen seleccionada' })).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Guardar producto' }))
-  expect(await screen.findByText('Producto actualizado correctamente.')).toBeInTheDocument()
+  expect(await screen.findByText('Producto actualizado.')).toBeInTheDocument()
   const guardados = productosApi
   expect(guardados).toHaveLength(4)
-  expect(guardados[0]).toMatchObject({ id: 1, nombre: 'Catan actualizado', precio: 45000, stock: 4, categoria: 'Mesa', imagen: 'https://example.com/nueva.png' })
+  expect(guardados[0]).toMatchObject({ id: 1, nombre: 'Catan actualizado', precio: 45000, stock: 4, categoria: 'Mesa', imagen: '/api/imagenes/12345678-1234-1234-1234-123456789abc.png' })
   await user.click(screen.getByRole('link', { name: 'Carrito (1)' }))
   expect(screen.getByText('Subtotal: $45.000 CLP')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'Catan actualizado' })).toBeInTheDocument()
   vista.unmount()
   await abrir()
-  expect(await screen.findByRole('img', { name: 'Catan actualizado' })).toHaveAttribute('src', 'https://example.com/nueva.png')
+  expect(await screen.findByRole('img', { name: 'Catan actualizado' })).toHaveAttribute('src', expect.stringContaining('/api/imagenes/12345678-1234-1234-1234-123456789abc.png'))
 }, 15000)
 
 test('edición conserva imagen original y rechaza precio y stock inválidos', async () => {
@@ -90,7 +92,8 @@ test('edición conserva imagen original y rechaza precio y stock inválidos', as
   await user.clear(screen.getByLabelText('Stock'))
   await user.type(screen.getByLabelText('Stock'), '0')
   await user.click(screen.getByRole('button', { name: 'Guardar producto' }))
-  expect(await screen.findByText('Producto actualizado correctamente.')).toBeInTheDocument()
+  expect(await screen.findByText('Producto actualizado.')).toBeInTheDocument()
+  expect(productosApi[0].imagen).toBe('/catalogo/catan.jpg')
 })
 
 test('producto inexistente muestra aviso sin fallar', async () => {
@@ -130,11 +133,14 @@ test('cancelar conserva el producto; confirmar actualiza catálogo y carrito', a
 test('crea un producto y lo conserva al montar nuevamente la aplicación', async () => {
   const user = userEvent.setup()
   const vista = await abrir('/admin/productos/nuevo', true)
-  for (const [campo, valor] of Object.entries({ Nombre: 'Teclado prueba', Categoría: 'Accesorios', 'Precio CLP': '19990', Descripción: 'Teclado ficticio para pruebas', 'URL de la imagen': 'https://example.com/teclado.png', Stock: '0' })) {
+  for (const [campo, valor] of Object.entries({ Nombre: 'Teclado prueba', Categoría: 'Accesorios', 'Precio CLP': '19990', Descripción: 'Teclado ficticio para pruebas', Stock: '0' })) {
     await user.type(screen.getByLabelText(campo, { exact: true }), valor)
   }
   await user.click(screen.getByRole('button', { name: 'Guardar producto' }))
-  expect(await screen.findByText(/Producto agregado correctamente/)).toBeInTheDocument()
+  expect(screen.getByText('Selecciona una imagen del producto.')).toBeInTheDocument()
+  await user.upload(screen.getByLabelText('Imagen del producto'), new File(['imagen'], 'teclado.png', { type: 'image/png' }))
+  await user.click(screen.getByRole('button', { name: 'Guardar producto' }))
+  expect(await screen.findByText('Producto agregado al catálogo.')).toBeInTheDocument()
   const guardados = productosApi
   expect(guardados).toHaveLength(5)
   expect(new Set(guardados.map(p => p.id)).size).toBe(5)

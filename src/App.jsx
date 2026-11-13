@@ -10,7 +10,7 @@ import Registro from './views/Registro'
 import Login from './views/Login'
 import { leerSesion, eliminarSesion, eliminarUsuariosLocales } from './data/sesion'
 import { ROL_ADMINISTRADOR, ROL_CLIENTE } from './data/roles'
-import { cargarProductos, crearProducto, actualizarProducto, borrarProducto } from './data/productos'
+import { cargarProductos, crearProducto, actualizarProducto, borrarProducto, subirImagen } from './data/productos'
 import AdminLayout from './views/admin/AdminLayout'
 import AdminProductos from './views/admin/AdminProductos'
 import AdminAgregarProducto from './views/admin/AdminAgregarProducto'
@@ -157,6 +157,10 @@ function App() {
     }
   }
 
+  function subirImagenCatalogo(archivo) {
+    return solicitarCambio((token) => subirImagen(archivo, token))
+  }
+
   async function agregarProductoCatalogo(datos) {
     const producto = await solicitarCambio((token) => crearProducto(datos, token))
     guardarEnCatalogo(producto)
@@ -202,8 +206,8 @@ function App() {
         <Route path="/admin" element={<AdminLayout usuario={usuarioSesion} />}>
           <Route index element={<Navigate to="productos" replace />} />
           <Route path="productos" element={<AdminProductos productos={productos} eliminarProducto={eliminarProductoCatalogo} disponible={!catalogo.cargando && !catalogo.error} />} />
-          <Route path="productos/nuevo" element={<AdminAgregarProducto agregarProducto={agregarProductoCatalogo} />} />
-          <Route path="productos/:id/editar" element={<AdminEditarProducto editarProducto={editarProductoCatalogo} />} />
+          <Route path="productos/nuevo" element={<AdminAgregarProducto agregarProducto={agregarProductoCatalogo} subirImagen={subirImagenCatalogo} />} />
+          <Route path="productos/:id/editar" element={<AdminEditarProducto editarProducto={editarProductoCatalogo} subirImagen={subirImagenCatalogo} />} />
         </Route>
       </Routes>
       <Footer />

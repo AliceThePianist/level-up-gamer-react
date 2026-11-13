@@ -7,6 +7,8 @@ beforeEach(() => {
   localStorage.clear()
   sessionStorage.clear()
   simularApi()
+  vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:imagen-de-prueba')
+  vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
 })
 afterEach(() => {
