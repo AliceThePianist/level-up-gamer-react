@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, test } from 'vitest'
@@ -17,7 +17,10 @@ test('el enlace abre el detalle con todos los datos y permite volver', async () 
   abrir()
   await user.click(await screen.findByRole('link', { name: 'Ver detalle de Catan' }))
   expect(await screen.findByRole('heading', { level: 1, name: 'Catan' })).toBeInTheDocument()
-  expect(screen.getByRole('img', { name: 'Catan' })).toBeInTheDocument()
+  const imagen = screen.getByRole('img', { name: 'Catan' })
+  expect(imagen).toHaveAttribute('src', '/catalogo/catan.jpg')
+  fireEvent.error(imagen)
+  expect(screen.getByText('Imagen no disponible')).toBeInTheDocument()
   expect(screen.getByText('Juegos de Mesa')).toBeInTheDocument()
   expect(screen.getByText(productosIniciales[0].descripcion)).toBeInTheDocument()
   expect(screen.getByText('Stock disponible: 2')).toBeInTheDocument()

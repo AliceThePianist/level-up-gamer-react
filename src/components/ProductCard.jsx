@@ -5,6 +5,8 @@ import { urlImagen } from '../data/api'
 
 function ProductCard({ producto, agregarProducto, cantidad = 0, mostrarEnlace = true, mostrarDescripcion = true, tituloAs = 'h2' }) {
   const [agregado, setAgregado] = useState(false)
+  const [imagenFallida, setImagenFallida] = useState(null)
+  const imagen = urlImagen(producto.imagen)
 
   function agregar() {
     if (cantidad >= producto.stock) return
@@ -13,7 +15,11 @@ function ProductCard({ producto, agregarProducto, cantidad = 0, mostrarEnlace = 
   }
   return (
     <Card as="article" className="tarjeta-producto h-100">
-      <Card.Img variant="top" src={urlImagen(producto.imagen)} alt={producto.nombre} loading="lazy" />
+      {imagen && imagenFallida !== imagen ? (
+        <Card.Img variant="top" src={imagen} alt={producto.nombre} loading="lazy" onError={() => setImagenFallida(imagen)} />
+      ) : (
+        <div className="card-img-top d-flex align-items-center justify-content-center text-secondary small">Imagen no disponible</div>
+      )}
       <Card.Body className="d-flex flex-column">
         <p className="etiqueta small">{producto.categoria}</p>
         <Card.Title as={tituloAs} className="h5 mb-4">{producto.nombre}</Card.Title>

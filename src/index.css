@@ -29,7 +29,13 @@ a:focus-visible, button:focus-visible { outline: 3px solid #1b75ed; outline-offs
 .tarjeta-categoria .card-body { padding: 1.4rem; }
 .tarjeta-categoria p { font-size: .95rem; }
 .tarjeta-producto { border: 1px solid #e0e5ea; overflow: hidden; border-radius: .7rem; }
-.tarjeta-producto .card-img-top { aspect-ratio: 1; object-fit: cover; }
+.tarjeta-producto .card-img-top {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: #f4f6f8;
+}
 .tarjeta-producto .card-body { padding: 1.4rem; }
 .precio { color: #0b5ed7; font-size: 1.5rem; font-weight: 700; }
 .precio span { font-size: .75rem; }
