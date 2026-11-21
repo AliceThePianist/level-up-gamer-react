@@ -21,6 +21,7 @@ import CuentaLayout from './views/CuentaLayout'
 import MiCuenta from './views/MiCuenta'
 import Pedidos from './views/Pedidos'
 import DetallePedido from './views/DetallePedido'
+import ResumenAdmin from './views/admin/ResumenAdmin'
 
 function App() {
   const [productos, setProductos] = useState([])
@@ -272,6 +273,9 @@ function App() {
           <Route path="productos" element={<AdminProductos productos={productos} eliminarProducto={eliminarProductoCatalogo} disponible={!catalogo.cargando && !catalogo.error} />} />
           <Route path="productos/nuevo" element={<AdminAgregarProducto agregarProducto={agregarProductoCatalogo} subirImagen={subirImagenCatalogo} />} />
           <Route path="productos/:id/editar" element={<AdminEditarProducto editarProducto={editarProductoCatalogo} subirImagen={subirImagenCatalogo} />} />
+          <Route path="pedidos" element={<Pedidos administrador solicitarPrivado={solicitarPrivado} />} />
+          <Route path="pedidos/:id" element={<DetallePedido key={pathname} administrador solicitarPrivado={solicitarPrivado} alCambiarEstado={reintentarCatalogo} />} />
+          <Route path="resumen" element={<ResumenAdmin solicitarPrivado={solicitarPrivado} />} />
         </Route>
         <Route element={<CuentaLayout key={usuarioSesion?.token || 'invitado'} usuario={usuarioSesion} />}>
           <Route path="/mi-cuenta" element={<MiCuenta solicitarPrivado={solicitarPrivado} actualizarPerfil={actualizarPerfil} cerrarSesion={cerrarSesion} />} />

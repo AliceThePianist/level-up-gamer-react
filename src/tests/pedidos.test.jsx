@@ -5,7 +5,30 @@ import { expect, test, vi } from 'vitest'
 import App from '../App'
 import { registrarUsuario } from '../data/usuarios'
 import { iniciarSesion } from '../data/sesion'
+import { solicitar } from '../data/api'
+import { claveAdministrador, correoAdministrador, productosApi } from './apiSimulada'
 
+test('el administrador consulta pedidos y confirma la cancelación antes de devolver stock', async () => {
+  const user = userEvent.setup()
+  await registrarUsuario({ nombre: 'Cliente', apellido: 'Local', rut: '11111111-1', fechaNacimiento: '2000-01-01', correo: 'cliente@example.test', contrasena: 'ClaveLocalDePrueba' })
+  const cliente = await iniciarSesion('cliente@example.test', 'ClaveLocalDePrueba')
+  await solicitar('/api/pedidos', { metodo: 'POST', token: cliente.token, datos: { productos: [{ id: 1, cantidad: 2 }] } })
+  await iniciarSesion(correoAdministrador, claveAdministrador)
+  render(<MemoryRouter initialEntries={['/admin/pedidos']}><App /></MemoryRouter>)
+  await user.click(await screen.findByRole('link', { name: 'Ver pedido #1' }))
+  expect(await screen.findByRole('heading', { name: 'Pedido #1' })).toBeInTheDocument()
+  await user.selectOptions(screen.getByLabelText('Nuevo estado'), 'CANCELADO')
+  await user.click(screen.getByRole('button', { name: 'Actualizar estado' }))
+  expect(await screen.findByRole('dialog')).toBeInTheDocument()
+  expect(productosApi[0].stock).toBe(8)
+  await user.click(screen.getByRole('button', { name: 'Confirmar cancelación' }))
+  expect(await screen.findByText('Estado actualizado.')).toBeInTheDocument()
+  expect(productosApi[0].stock).toBe(10)
+  expect(screen.queryByLabelText('Nuevo estado')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('link', { name: 'Resumen', exact: true }))
+  expect(await screen.findByRole('heading', { name: 'Resumen administrativo' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Productos con 5 unidades o menos' })).toBeInTheDocument()
+}, 20000)
 
 async function abrirCliente(ruta) {
   await registrarUsuario({ nombre: 'Cliente', apellido: 'Local', rut: '11111111-1', fechaNacimiento: '2000-01-01', correo: 'cliente@example.test', contrasena: 'ClaveLocalDePrueba' })

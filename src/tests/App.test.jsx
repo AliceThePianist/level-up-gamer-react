@@ -51,7 +51,7 @@ test('carrito vacío impide comprar', async () => {
   expect(screen.getByRole('button', { name: 'Registrar pedido', exact: true })).toBeDisabled()
 })
 
-test.each(['/admin', '/admin/productos', '/admin/productos/nuevo', '/admin/productos/1/editar'])('bloquea %s para un cliente', async (ruta) => {
+test.each(['/admin', '/admin/productos', '/admin/productos/nuevo', '/admin/productos/1/editar', '/admin/pedidos', '/admin/pedidos/1', '/admin/resumen'])('bloquea %s para un cliente', async (ruta) => {
   sessionStorage.setItem('usuarioSesion', JSON.stringify({ nombre: 'Cliente', rol: 'CLIENTE', token: 'token-de-prueba', expiraEn: Date.now() + 60000 }))
   await abrir(ruta)
   expect(screen.getByText(/Tu cuenta no tiene acceso a la administración/)).toBeInTheDocument()

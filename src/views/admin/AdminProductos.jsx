@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, Modal, Table } from 'react-bootstrap'
+import { Alert, Badge, Button, Modal, Table } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 
 function AdminProductos({ productos, eliminarProducto, disponible }) {
@@ -40,7 +40,9 @@ function AdminProductos({ productos, eliminarProducto, disponible }) {
             {productos.map((producto) => (
               <tr key={producto.id}>
                 <td>{producto.id}</td><td>{producto.nombre}</td><td>{producto.categoria}</td>
-                <td>${producto.precio.toLocaleString('es-CL')}</td><td>{producto.stock}</td>
+                <td>${producto.precio.toLocaleString('es-CL')}</td><td>{producto.stock}{' '}
+                  {producto.stock <= 5 && <Badge bg={producto.stock === 0 ? 'danger' : 'warning'} text={producto.stock === 0 ? undefined : 'dark'}>{producto.stock === 0 ? 'Agotado' : 'Stock bajo'}</Badge>}
+                </td>
                 <td>
                   <Button as={Link} to={`/admin/productos/${producto.id}/editar`} size="sm" variant="outline-primary" className="me-2 mb-1" aria-label={`Editar ${producto.nombre}`}>Editar</Button>
                   <Button size="sm" variant="outline-danger" onClick={() => setSeleccionado(producto)} aria-label={`Eliminar ${producto.nombre}`}>Eliminar</Button>
