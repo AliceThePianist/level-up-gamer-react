@@ -16,7 +16,7 @@ export async function iniciarSesion(correo, contrasena) {
     token: respuesta.token,
     expiraEn: Date.now() + respuesta.expiraEn * 1000,
   })
-  sessionStorage.setItem(claveSesion, JSON.stringify(sesion))
+  guardarSesion(sesion)
   return sesion
 }
 
@@ -38,6 +38,10 @@ export function leerSesion() {
 
 export function eliminarSesion() {
   sessionStorage.removeItem(claveSesion)
+}
+
+export function guardarSesion(sesion) {
+  sessionStorage.setItem(claveSesion, JSON.stringify(perfilDeSesion(sesion)))
 }
 
 export function eliminarUsuariosLocales() {

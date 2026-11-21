@@ -22,12 +22,12 @@ test.each(['alumno@duoc.cl', 'alumno@duocuc.cl'])('aplica 20%% a %s y conserva e
   expect(screen.getByText('Subtotal de compra: $29.990 CLP')).toBeInTheDocument()
   expect(screen.getByText('Descuento Duoc (20%): $5.998 CLP')).toBeInTheDocument()
   expect(screen.getByText(/Total: \$23.992/)).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Guardar resumen', exact: true }))
-  expect(screen.getByText('$23.992 CLP')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Registrar pedido', exact: true }))
+  expect(await screen.findByText('$23.992 CLP')).toBeInTheDocument()
   expect(screen.getByText('Beneficio Duoc aplicado: $5.998 CLP')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Guardar resumen', exact: true })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Registrar pedido', exact: true })).toBeDisabled()
   await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
-  expect(screen.queryByText('Resumen guardado')).not.toBeInTheDocument()
+  expect(screen.queryByText('Pedido registrado')).not.toBeInTheDocument()
 })
 
 test.each([null, 'cliente@example.com', 'alumno@duoc.cl.example.com'])('no aplica descuento a %s', async correo => {

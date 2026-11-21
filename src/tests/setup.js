@@ -1,7 +1,9 @@
 import '@testing-library/jest-dom/vitest'
 import { afterEach, beforeEach, vi } from 'vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { simularApi } from './apiSimulada'
+
+configure({ asyncUtilTimeout: 5000 })
 
 beforeEach(() => {
   localStorage.clear()

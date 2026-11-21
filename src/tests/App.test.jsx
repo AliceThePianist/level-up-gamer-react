@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, test } from 'vitest'
 import App from '../App'
 import { iniciarSesion } from '../data/sesion'
+import { registrarUsuario } from '../data/usuarios'
 import { claveAdministrador, correoAdministrador, productosApi } from './apiSimulada'
 
 async function abrir(ruta = '/productos', admin = false) {
@@ -13,6 +14,8 @@ async function abrir(ruta = '/productos', admin = false) {
 
 test('ajusta cantidades y separa el resumen de dos compras consecutivas', async () => {
   const user = userEvent.setup()
+  await registrarUsuario({ nombre: 'Cliente', apellido: 'Local', rut: '11111111-1', fechaNacimiento: '2000-01-01', correo: 'cliente@example.test', contrasena: 'ClaveDePrueba' })
+  await iniciarSesion('cliente@example.test', 'ClaveDePrueba')
   await abrir()
   await user.click(await screen.findByRole('button', { name: 'Agregar Catan al carrito' }))
   await user.click(await screen.findByRole('button', { name: 'Agregar Catan al carrito' }))
@@ -24,23 +27,28 @@ test('ajusta cantidades y separa el resumen de dos compras consecutivas', async 
   expect(screen.getByText('Subtotal: $29.990 CLP')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Aumentar cantidad de Catan' }))
   expect(screen.getByText('Subtotal: $59.980 CLP')).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Guardar resumen', exact: true }))
-  expect(screen.getByText('Resumen guardado')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Registrar pedido', exact: true }))
+  expect(await screen.findByText('Pedido registrado')).toBeInTheDocument()
   expect(screen.getByText('$59.980 CLP')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Guardar resumen', exact: true })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Registrar pedido', exact: true })).toBeDisabled()
   expect(screen.getByRole('link', { name: 'Carrito (0)' })).toBeInTheDocument()
   await user.click(screen.getByRole('link', { name: 'Seguir explorando productos' }))
   await user.click(await screen.findByRole('button', { name: 'Agregar Catan al carrito' }))
   await user.click(screen.getByRole('link', { name: 'Carrito (1)' }))
-  expect(screen.queryByText('Resumen guardado')).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Guardar resumen', exact: true }))
-  expect(screen.getByText('$29.990 CLP')).toBeInTheDocument()
+  expect(screen.queryByText('Pedido registrado')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Registrar pedido', exact: true }))
+  expect(await screen.findByText('$29.990 CLP')).toBeInTheDocument()
   expect(screen.queryByText('$59.980 CLP')).not.toBeInTheDocument()
-})
+  await user.click(screen.getByRole('link', { name: 'Mis pedidos', exact: true }))
+  expect(await screen.findByRole('link', { name: 'Ver pedido #1' })).toBeInTheDocument()
+  await user.click(screen.getByRole('link', { name: 'Ver pedido #1' }))
+  expect(await screen.findByRole('heading', { name: 'Pedido #1' })).toBeInTheDocument()
+  expect(screen.getByText('Pago no realizado')).toBeInTheDocument()
+}, 20000)
 
 test('carrito vacío impide comprar', async () => {
   await abrir('/carrito')
-  expect(screen.getByRole('button', { name: 'Guardar resumen', exact: true })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Registrar pedido', exact: true })).toBeDisabled()
 })
 
 test.each(['/admin', '/admin/productos', '/admin/productos/nuevo', '/admin/productos/1/editar'])('bloquea %s para un cliente', async (ruta) => {
@@ -55,7 +63,7 @@ test('edita sin duplicar y actualiza el precio del carrito y la persistencia', a
   const vista = await abrir('/productos', true)
   await user.click(await screen.findByRole('button', { name: 'Agregar Catan al carrito' }))
   await user.click(screen.getByRole('link', { name: 'Administración', exact: true }))
-  await user.click(screen.getByRole('button', { name: 'Editar Catan', exact: true }))
+  await user.click(await screen.findByRole('button', { name: 'Editar Catan', exact: true }))
   expect(await screen.findByLabelText('Nombre', { exact: true })).toHaveValue('Catan')
   for (const [campo, valor] of Object.entries({ Nombre: 'Catan actualizado', Categoría: 'Mesa', 'Precio CLP': '45000', Descripción: 'Descripción nueva del juego', Stock: '4' })) {
     await user.clear(screen.getByLabelText(campo, { exact: true }))
@@ -115,11 +123,11 @@ test('cancelar conserva el producto; confirmar actualiza catálogo y carrito', a
   await user.click(await screen.findByRole('button', { name: 'Agregar Catan al carrito' }))
   await user.click(screen.getByRole('button', { name: 'Agregar PlayStation 5 al carrito' }))
   await user.click(screen.getByRole('link', { name: 'Administración', exact: true }))
-  await user.click(screen.getByRole('button', { name: 'Eliminar Catan', exact: true }))
+  await user.click(await screen.findByRole('button', { name: 'Eliminar Catan', exact: true }))
   await user.click(screen.getByRole('button', { name: 'Cancelar', exact: true }))
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   expect(screen.getByRole('button', { name: 'Eliminar Catan', exact: true })).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Eliminar Catan', exact: true }))
+  await user.click(await screen.findByRole('button', { name: 'Eliminar Catan', exact: true }))
   await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Confirmar eliminación' }))
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   expect(productosApi).toHaveLength(3)

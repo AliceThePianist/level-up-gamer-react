@@ -29,6 +29,14 @@ export async function solicitar(ruta, { metodo = 'GET', datos, token, signal } =
   }
   if (!respuesta.ok) {
     const error = new Error(erroresHttp[respuesta.status] || 'El servidor no pudo completar la solicitud.')
+    if (respuesta.status === 400 || respuesta.status === 409) {
+      try {
+        const datos = await respuesta.json()
+        if (typeof datos.mensaje === 'string') error.message = datos.mensaje
+      } catch {
+        // Se mantiene el mensaje general cuando la respuesta no contiene JSON.
+      }
+    }
     error.status = respuesta.status
     throw error
   }

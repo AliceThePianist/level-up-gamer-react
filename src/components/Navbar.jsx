@@ -1,6 +1,6 @@
 import { Button, Container, Nav, Navbar as BootstrapNavbar } from 'react-bootstrap'
 import { Link, NavLink } from 'react-router-dom'
-import { ROL_ADMINISTRADOR } from '../data/roles'
+import { ROL_ADMINISTRADOR, ROL_CLIENTE } from '../data/roles'
 
 function Navbar({ unidades, usuarioSesion, cerrarSesion }) {
   return (
@@ -21,6 +21,8 @@ function Navbar({ unidades, usuarioSesion, cerrarSesion }) {
               <Nav.Link as={Link} to="/#novedades" eventKey="novedades">Novedades</Nav.Link>
               <Nav.Link as={NavLink} to="/carrito" eventKey="carrito">Carrito ({unidades})</Nav.Link>
               {usuarioSesion?.rol === ROL_ADMINISTRADOR && <Nav.Link as={NavLink} to="/admin" eventKey="admin">Administración</Nav.Link>}
+              {usuarioSesion && <Nav.Link as={NavLink} to="/mi-cuenta" eventKey="cuenta">Mi cuenta</Nav.Link>}
+              {usuarioSesion?.rol === ROL_CLIENTE && <Nav.Link as={NavLink} to="/mis-pedidos" eventKey="pedidos">Mis pedidos</Nav.Link>}
               {!usuarioSesion && (
                 <>
                   <Nav.Link as={NavLink} to="/registro" eventKey="registro">Registro</Nav.Link>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, Button, Container } from 'react-bootstrap'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
@@ -8,7 +8,7 @@ import Productos from './views/Productos'
 import Carrito from './views/Carrito'
 import Registro from './views/Registro'
 import Login from './views/Login'
-import { leerSesion, eliminarSesion, eliminarUsuariosLocales } from './data/sesion'
+import { leerSesion, eliminarSesion, eliminarUsuariosLocales, guardarSesion } from './data/sesion'
 import { ROL_ADMINISTRADOR, ROL_CLIENTE } from './data/roles'
 import { cargarProductos, crearProducto, actualizarProducto, borrarProducto, subirImagen } from './data/productos'
 import AdminLayout from './views/admin/AdminLayout'
@@ -16,6 +16,11 @@ import AdminProductos from './views/admin/AdminProductos'
 import AdminAgregarProducto from './views/admin/AdminAgregarProducto'
 import AdminEditarProducto from './views/admin/AdminEditarProducto'
 import DetalleProducto from './views/DetalleProducto'
+import { solicitar } from './data/api'
+import CuentaLayout from './views/CuentaLayout'
+import MiCuenta from './views/MiCuenta'
+import Pedidos from './views/Pedidos'
+import DetallePedido from './views/DetallePedido'
 
 function App() {
   const [productos, setProductos] = useState([])
@@ -28,6 +33,11 @@ function App() {
   const [carrito, setCarrito] = useState([])
   const [avisoCarrito, setAvisoCarrito] = useState('')
   const [ultimaCompra, setUltimaCompra] = useState(null)
+  const [registrandoPedido, setRegistrandoPedido] = useState(false)
+  const [errorPedido, setErrorPedido] = useState('')
+  const pedidoEnCurso = useRef(false)
+  const sesionActual = useRef(usuarioSesion)
+  sesionActual.current = usuarioSesion
   const { pathname, hash } = useLocation()
   const unidades = carrito.reduce((suma, item) => suma + item.cantidad, 0)
   const subtotal = carrito.reduce((suma, item) => {
@@ -55,6 +65,10 @@ function App() {
     cargarProductos(solicitud.signal).then((datos) => {
       if (solicitud.signal.aborted) return
       setProductos(datos)
+      setCarrito((actual) => actual.map((item) => {
+        const producto = datos.find((producto) => producto.id === item.id)
+        return { ...item, cantidad: Math.min(item.cantidad, producto?.stock || 0) }
+      }).filter((item) => item.cantidad > 0))
       setCatalogo({ cargando: false, error: '' })
     }).catch((error) => {
       if (!solicitud.signal.aborted) setCatalogo({ cargando: false, error: error.message })
@@ -86,6 +100,7 @@ function App() {
     setUsuarioSesion(usuario)
     setErrorSesion('')
     setUltimaCompra(null)
+    setErrorPedido('')
   }
 
   function cerrarSesion() {
@@ -121,11 +136,59 @@ function App() {
     setCarrito((actual) => actual.filter((item) => item.id !== id))
   }
 
-  function comprar() {
-    if (carrito.length === 0) return
-    setUltimaCompra({ subtotal, descuento, total })
-    setCarrito([])
-    setAvisoCarrito('')
+  async function comprar() {
+    if (carrito.length === 0 || pedidoEnCurso.current || usuarioSesion?.rol !== ROL_CLIENTE) return
+    pedidoEnCurso.current = true
+    setRegistrandoPedido(true)
+    setErrorPedido('')
+    const enviados = carrito.map(({ id, cantidad }) => ({ id, cantidad }))
+    const token = usuarioSesion.token
+    try {
+      const pedido = await solicitarPrivado('/api/pedidos', { metodo: 'POST', datos: { productos: enviados } })
+      // Conserva unidades que el usuario haya agregado mientras se enviaba el pedido.
+      setCarrito((actual) => actual.map((item) => ({
+        ...item, cantidad: item.cantidad - (enviados.find((enviado) => enviado.id === item.id)?.cantidad || 0),
+      })).filter((item) => item.cantidad > 0))
+      if (sesionActual.current?.token === token) setUltimaCompra(pedido)
+      setAvisoCarrito('')
+      reintentarCatalogo()
+    } catch (error) {
+      if (sesionActual.current?.token === token) setErrorPedido(error.message)
+    } finally {
+      pedidoEnCurso.current = false
+      setRegistrandoPedido(false)
+    }
+  }
+
+  const solicitarPrivado = useCallback(async (ruta, opciones = {}) => {
+    const token = usuarioSesion?.token
+    if (!token) throw new Error('Inicia sesión para continuar.')
+    try {
+      return await solicitar(ruta, { ...opciones, token })
+    } catch (error) {
+      if (error.status === 401 && sesionActual.current?.token === token) {
+        try {
+          eliminarSesion()
+        } catch {
+          // También se cierra la sesión en memoria si el almacenamiento está bloqueado.
+        } finally {
+          setUsuarioSesion(null)
+          setUltimaCompra(null)
+          setErrorSesion('Tu sesión terminó. Vuelve a iniciar sesión.')
+        }
+      }
+      throw error
+    }
+  }, [usuarioSesion?.token])
+
+  function actualizarPerfil(perfil) {
+    const sesion = { ...usuarioSesion, nombre: perfil.nombre, rol: perfil.rol, descuento: perfil.descuento }
+    setUsuarioSesion(sesion)
+    try {
+      guardarSesion(sesion)
+    } catch {
+      setErrorSesion('Los datos se actualizaron. La sesión no pudo guardarse para la próxima recarga.')
+    }
   }
 
   function guardarEnCatalogo(producto) {
@@ -201,13 +264,21 @@ function App() {
             productos={productos} carrito={carrito} subtotal={subtotal} descuento={descuento}
             total={total} ultimaCompra={ultimaCompra} aumentarProducto={agregarProducto}
             disminuirProducto={disminuirProducto} eliminarProducto={eliminarProducto} comprar={comprar}
+            usuarioSesion={usuarioSesion} registrandoPedido={registrandoPedido} errorPedido={errorPedido}
           />
         } />
-        <Route path="/admin" element={<AdminLayout usuario={usuarioSesion} />}>
+        <Route path="/admin" element={<AdminLayout key={usuarioSesion?.token || 'invitado'} usuario={usuarioSesion} />}>
           <Route index element={<Navigate to="productos" replace />} />
           <Route path="productos" element={<AdminProductos productos={productos} eliminarProducto={eliminarProductoCatalogo} disponible={!catalogo.cargando && !catalogo.error} />} />
           <Route path="productos/nuevo" element={<AdminAgregarProducto agregarProducto={agregarProductoCatalogo} subirImagen={subirImagenCatalogo} />} />
           <Route path="productos/:id/editar" element={<AdminEditarProducto editarProducto={editarProductoCatalogo} subirImagen={subirImagenCatalogo} />} />
+        </Route>
+        <Route element={<CuentaLayout key={usuarioSesion?.token || 'invitado'} usuario={usuarioSesion} />}>
+          <Route path="/mi-cuenta" element={<MiCuenta solicitarPrivado={solicitarPrivado} actualizarPerfil={actualizarPerfil} cerrarSesion={cerrarSesion} />} />
+        </Route>
+        <Route element={<CuentaLayout key={usuarioSesion?.token || 'invitado'} usuario={usuarioSesion} soloCliente />}>
+          <Route path="/mis-pedidos" element={<Pedidos solicitarPrivado={solicitarPrivado} />} />
+          <Route path="/mis-pedidos/:id" element={<DetallePedido key={pathname} solicitarPrivado={solicitarPrivado} />} />
         </Route>
       </Routes>
       <Footer />
