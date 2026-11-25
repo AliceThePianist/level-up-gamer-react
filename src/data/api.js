@@ -1,4 +1,9 @@
-const urlBase = (import.meta.env.VITE_API_URL ?? 'http://localhost:8080').replace(/\/+$/, '')
+import axios from 'axios'
+
+const baseConfigurada = (import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? '' : 'http://localhost:8080')).trim()
+const direccion = new URL(baseConfigurada || '/', 'http://localhost')
+const rutaBase = direccion.pathname.replace(/\/+$/, '').replace(/(?:\/api)+$/, '')
+const urlBase = /^https?:\/\//.test(baseConfigurada) ? `${direccion.origin}${rutaBase}` : rutaBase
 
 const erroresHttp = {
   400: 'Revisa los datos enviados.',
@@ -14,37 +19,31 @@ export function urlImagen(referencia) {
 
 export async function solicitar(ruta, { metodo = 'GET', datos, token, signal } = {}) {
   const headers = { Accept: 'application/json' }
-  const esFormulario = datos instanceof FormData
-  if (datos !== undefined && !esFormulario) headers['Content-Type'] = 'application/json'
+  if (datos instanceof FormData) headers['Content-Type'] = undefined
   if (token) headers.Authorization = `Bearer ${token}`
 
-  let respuesta
   try {
-    respuesta = await fetch(`${urlBase}${ruta}`, {
-      method: metodo, headers, body: esFormulario ? datos : JSON.stringify(datos), signal,
+    const respuesta = await axios.request({
+      baseURL: urlBase, url: ruta, method: metodo, headers, data: datos, signal,
+      responseType: 'json',
+      transitional: { silentJSONParsing: false },
     })
-  } catch (error) {
-    if (error.name === 'AbortError') throw error
-    throw new Error('No se pudo conectar con el servidor. Inténtalo nuevamente.')
-  }
-  if (!respuesta.ok) {
-    const error = new Error(erroresHttp[respuesta.status] || 'El servidor no pudo completar la solicitud.')
-    if (respuesta.status === 400 || respuesta.status === 409) {
-      try {
-        const datos = await respuesta.json()
-        if (typeof datos.mensaje === 'string') error.message = datos.mensaje
-      } catch {
-        // Se mantiene el mensaje general cuando la respuesta no contiene JSON.
-      }
+    if (respuesta.status !== 204) return respuesta.data
+  } catch (causa) {
+    if (axios.isCancel(causa) || signal?.aborted) {
+      throw new DOMException('Solicitud cancelada.', 'AbortError')
     }
+    const respuesta = causa.response
+    if (!respuesta) {
+      if (causa.code === 'ERR_BAD_RESPONSE') throw new Error('El servidor devolvió una respuesta inesperada.')
+      throw new Error('No se pudo conectar con el servidor. Inténtalo nuevamente.')
+    }
+    let mensaje = erroresHttp[respuesta.status] || 'El servidor no pudo completar la solicitud.'
+    if ([400, 409].includes(respuesta.status) && typeof respuesta.data?.mensaje === 'string') {
+      mensaje = respuesta.data.mensaje
+    }
+    const error = new Error(mensaje)
     error.status = respuesta.status
     throw error
-  }
-  if (respuesta.status === 204) return
-  try {
-    return await respuesta.json()
-  } catch (error) {
-    if (error.name === 'AbortError') throw error
-    throw new Error('El servidor devolvió una respuesta inesperada.')
   }
 }

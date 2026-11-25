@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
@@ -41,14 +42,14 @@ test('un pedido rechazado conserva el carrito y solo envía identificadores y ca
   await abrirCliente('/productos')
   await user.click(await screen.findByRole('button', { name: 'Agregar Catan al carrito' }))
   await user.click(screen.getByRole('link', { name: 'Carrito (1)' }))
-  vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status: 409, json: async () => ({ mensaje: 'Stock insuficiente para Catan.' }) })
+  vi.mocked(axios.request).mockRejectedValueOnce(new axios.AxiosError('Stock insuficiente', undefined, undefined, undefined, { status: 409, data: { mensaje: 'Stock insuficiente para Catan.' } }))
   await user.click(screen.getByRole('button', { name: 'Registrar pedido' }))
   expect(await screen.findByText(/Stock insuficiente para Catan/)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Carrito (1)' })).toBeInTheDocument()
   expect(screen.queryByText('Pedido registrado')).not.toBeInTheDocument()
-  const llamada = vi.mocked(fetch).mock.calls.find(([url]) => url.endsWith('/api/pedidos'))
-  expect(JSON.parse(llamada[1].body)).toEqual({ productos: [{ id: 1, cantidad: 1 }] })
-  expect(llamada[1].headers.Authorization).toMatch(/^Bearer /)
+  const [llamada] = vi.mocked(axios.request).mock.calls.find(([config]) => config.url === '/api/pedidos')
+  expect(llamada.data).toEqual({ productos: [{ id: 1, cantidad: 1 }] })
+  expect(llamada.headers.Authorization).toMatch(/^Bearer /)
   await user.click(screen.getByRole('button', { name: 'Registrar pedido' }))
   expect(await screen.findByText('Pedido registrado')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Carrito (0)' })).toBeInTheDocument()

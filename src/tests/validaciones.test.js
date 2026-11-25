@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { expect, test, vi } from 'vitest'
 import { validarRegistro } from '../utils/validarRegistro'
 import { validarImagen, validarProducto } from '../utils/validarProducto'
@@ -28,7 +29,7 @@ test('rechaza correo incorrecto y contraseñas distintas', () => {
 test('envía el registro sin rol ni confirmación y usa el beneficio de la API', async () => {
   const usuario = await registrarUsuario({ ...formulario, rol: 'ADMINISTRADOR' })
   expect(usuario).toMatchObject({ rol: 'CLIENTE', descuento: 20 })
-  const enviado = JSON.parse(vi.mocked(fetch).mock.calls[0][1].body)
+  const enviado = vi.mocked(axios.request).mock.calls[0][0].data
   expect(enviado).not.toHaveProperty('rol')
   expect(enviado).not.toHaveProperty('confirmacion')
   expect(localStorage.getItem('levelup-usuarios-demo')).toBeNull()
@@ -81,6 +82,6 @@ test('catálogo vacío de la API no restaura productos locales', async () => {
   await expect(cargarProductos()).resolves.toEqual([])
 })
 test('error de red informa que el servidor no está disponible', async () => {
-  vi.mocked(fetch).mockRejectedValueOnce(new TypeError('Sin conexión'))
+  vi.mocked(axios.request).mockRejectedValueOnce(new TypeError('Sin conexión'))
   await expect(cargarProductos()).rejects.toThrow('No se pudo conectar con el servidor.')
 })

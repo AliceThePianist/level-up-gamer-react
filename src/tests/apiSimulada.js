@@ -1,4 +1,5 @@
 import { vi } from 'vitest'
+import axios from 'axios'
 import { productosIniciales } from '../data/productosIniciales'
 import { ROL_ADMINISTRADOR, ROL_CLIENTE } from '../data/roles'
 
@@ -11,7 +12,9 @@ const tokens = new Map()
 let siguienteId
 
 function respuesta(status, datos) {
-  return { status, ok: status >= 200 && status < 300, json: async () => structuredClone(datos) }
+  const resultado = { status, data: structuredClone(datos) }
+  if (status >= 400) throw new axios.AxiosError('Solicitud rechazada', undefined, undefined, undefined, resultado)
+  return resultado
 }
 
 export function simularApi() {
@@ -21,10 +24,10 @@ export function simularApi() {
   pedidosApi.length = 0
   tokens.clear()
   usuarios.set(correoAdministrador, { id: 1, nombre: 'Administrador', rol: ROL_ADMINISTRADOR, descuento: 0, contrasena: claveAdministrador })
-  vi.stubGlobal('fetch', vi.fn(async (url, { method, body, headers, signal }) => {
+  vi.spyOn(axios, 'request').mockImplementation(async ({ url, method, data: body, headers, signal }) => {
     signal?.throwIfAborted()
-    const { pathname } = new URL(url)
-    const datos = typeof body === 'string' ? JSON.parse(body) : undefined
+    const { pathname } = new URL(url, 'http://localhost')
+    const datos = body instanceof FormData ? undefined : body
 
     if (pathname === '/api/imagenes') {
       if (tokens.get(headers.Authorization)?.rol !== ROL_ADMINISTRADOR) return respuesta(403)
@@ -135,5 +138,5 @@ export function simularApi() {
       return respuesta(204)
     }
     return respuesta(405)
-  }))
+  })
 }

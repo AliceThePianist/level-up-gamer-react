@@ -213,7 +213,7 @@ function App() {
     try {
       return await operacion(usuarioSesion.token)
     } catch (error) {
-      if (error.status === 401 && leerSesion()?.token === usuarioSesion.token) {
+      if (error.status === 401 && sesionActual.current?.token === usuarioSesion.token) {
         cerrarSesion()
         setErrorSesion(error.message)
       }

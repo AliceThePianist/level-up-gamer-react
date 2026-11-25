@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
@@ -45,8 +46,25 @@ test('fallo de la API durante eliminación conserva catálogo y muestra error', 
   await iniciarSesion(correoAdministrador, claveAdministrador)
   render(<MemoryRouter initialEntries={['/admin/productos']}><App /></MemoryRouter>)
   await user.click(await screen.findByRole('button', { name: 'Eliminar Catan', exact: true }))
-  vi.mocked(fetch).mockRejectedValueOnce(new TypeError('Sin conexión'))
+  vi.mocked(axios.request).mockRejectedValueOnce(new TypeError('Sin conexión'))
   await user.click(screen.getByRole('button', { name: 'Confirmar eliminación' }))
   expect(await screen.findByText(/No se pudo conectar con el servidor/)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Eliminar Catan', exact: true })).toBeInTheDocument()
 })
+
+test.each([401, 403])('la administración maneja %s sin eliminar el producto', async (status) => {
+  const user = userEvent.setup()
+  await iniciarSesion(correoAdministrador, claveAdministrador)
+  render(<MemoryRouter initialEntries={['/admin/productos']}><App /></MemoryRouter>)
+  await user.click(await screen.findByRole('button', { name: 'Eliminar Catan', exact: true }))
+  vi.mocked(axios.request).mockRejectedValueOnce(new axios.AxiosError('Acceso rechazado', undefined, undefined, undefined, { status, data: {} }))
+  await user.click(screen.getByRole('button', { name: 'Confirmar eliminación' }))
+  if (status === 401) {
+    expect(await screen.findByText('Tu sesión terminó. Vuelve a iniciar sesión.')).toBeInTheDocument()
+    expect(sessionStorage.getItem('usuarioSesion')).toBeNull()
+  } else {
+    expect(await screen.findByText('Tu cuenta no tiene permiso para realizar esta acción.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Eliminar Catan', exact: true })).toBeInTheDocument()
+    expect(sessionStorage.getItem('usuarioSesion')).not.toBeNull()
+  }
+}, 20000)
